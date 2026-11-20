@@ -1,0 +1,33 @@
+# Dependencias
+node_modules
+node_modules/
+
+# Compilación y bundles
+dist
+dist/
+build
+build/
+
+# Variables de entorno y secretos (RA 7)
+.env
+.env.*
+!.env.example
+
+# Despliegue y metadatos locales
+.vercel
+.vercel/
+.cache
+
+# Entregables, capturas y archivos comprimidos
+*.zip
+*.pdf
+capturas/
+entregable*/
+deliverables/
+
+# Logs y sistema operativo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
