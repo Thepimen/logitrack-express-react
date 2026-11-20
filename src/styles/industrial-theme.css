@@ -63,19 +63,22 @@ body,
 ion-app.lt-app-shell {
   margin: 0;
   padding: 0;
-  min-height: 100vh;
+  height: auto !important;
+  min-height: 100vh !important;
   background-color: var(--lt-bg-obsidian);
   color: var(--lt-text-primary);
   font-family: var(--lt-font-sans);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   overflow-y: auto !important;
+  position: static !important;
 }
 
 ion-app.lt-app-shell {
-  position: relative !important;
+  position: static !important;
   display: block !important;
   contain: none !important;
+  overflow: visible !important;
 }
 
 .lt-layout-root {
@@ -635,7 +638,7 @@ ion-button:active:not([disabled]) {
     rgba(0, 0, 0, 0.35) 10px,
     rgba(0, 0, 0, 0.35) 22px
   );
-  animation: ltBeltMotion 2.4s linear infinite;
+  will-change: transform;
 }
 
 .lt-belt-paused .lt-belt-rollers {

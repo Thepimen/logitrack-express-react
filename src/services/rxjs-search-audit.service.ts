@@ -10,7 +10,7 @@ import { packageService } from './package.service';
  * Este módulo contiene:
  * 1. El código textual defectuoso generado inicialmente por la IA (comentado y documentado
  *    para inspección en la vista de Auditoría Técnica y en la Memoria PDF).
- * 2. El motor RxJS refactorizado con cancelación determinista (`takeUntil(destroy$)`) y
+ * 2. El motor RxJS refactorizado con cancelación determinista (`takeUntil(streamDestroy$)`) y
  *    tipado estricto (`ReadonlyArray<WarehousePackage>`), libre de fugas de memoria.
  */
 
@@ -44,16 +44,16 @@ export class PackageSearchHelper {
 }`;
 
 export const STUDENT_REFACTORED_CODE_SNIPPET = `// [CÓDIGO REFACTORIZADO POR LUIS LÁZARO PIMENTEL — 100% SEGURO EN MEMORIA Y TIPADO ESTRICTO]
-// Alternativa A: Pipeline RxJS con cancelación determinista takeUntil(destroy$) y tipado WarehousePackage
+// Alternativa A: Pipeline RxJS con cancelación determinista takeUntil(streamDestroy$) y tipado WarehousePackage
 export class SafeReactivePackageFilter {
   private readonly searchTerms$ = new Subject<string>();
-  private readonly destroy$ = new Subject<void>();
 
   public connectStream(
     sourceGetter: () => ReadonlyArray<WarehousePackage>,
     priorityGetter: () => PriorityFilter,
     onResult: (filtered: ReadonlyArray<WarehousePackage>) => void
   ): () => void {
+    const streamDestroy$ = new Subject<void>();
     const subscription = this.searchTerms$
       .pipe(
         debounceTime(180),
@@ -62,7 +62,7 @@ export class SafeReactivePackageFilter {
           const filtered = packageService.filterPackages(sourceGetter(), term, priorityGetter());
           return of(filtered);
         }),
-        takeUntil(this.destroy$)
+        takeUntil(streamDestroy$)
       )
       .subscribe({
         next: (packages: ReadonlyArray<WarehousePackage>) => onResult(packages),
@@ -70,8 +70,8 @@ export class SafeReactivePackageFilter {
       });
 
     return () => {
-      this.destroy$.next();
-      this.destroy$.complete();
+      streamDestroy$.next();
+      streamDestroy$.complete();
       subscription.unsubscribe();
     };
   }
@@ -85,21 +85,25 @@ export class SafeReactivePackageFilter {
  */
 export class SafeReactivePackageFilter {
   private readonly searchTerms$ = new Subject<string>();
-  private readonly destroy$ = new Subject<void>();
   private activeSubscriptionCount = 0;
 
   public connectStream(
     sourceGetter: () => ReadonlyArray<WarehousePackage>,
     priorityGetter: () => PriorityFilter,
     statusGetter: () => StatusFilter,
-    onResult: (filtered: ReadonlyArray<WarehousePackage>) => void
+    onResult: (filtered: ReadonlyArray<WarehousePackage>) => void,
+    debounceMs = 0
   ): () => void {
     this.activeSubscriptionCount += 1;
+    const streamDestroy$ = new Subject<void>();
 
-    const subscription = this.searchTerms$
+    const pipeline$ =
+      debounceMs > 0
+        ? this.searchTerms$.pipe(debounceTime(debounceMs), distinctUntilChanged())
+        : this.searchTerms$.pipe(distinctUntilChanged());
+
+    const subscription = pipeline$
       .pipe(
-        debounceTime(180),
-        distinctUntilChanged(),
         switchMap((term: string): Observable<ReadonlyArray<WarehousePackage>> => {
           const filtered = packageService.filterPackages(
             sourceGetter(),
@@ -109,7 +113,7 @@ export class SafeReactivePackageFilter {
           );
           return of(filtered);
         }),
-        takeUntil(this.destroy$)
+        takeUntil(streamDestroy$)
       )
       .subscribe({
         next: (packages: ReadonlyArray<WarehousePackage>) => {
@@ -118,8 +122,8 @@ export class SafeReactivePackageFilter {
       });
 
     return () => {
-      this.destroy$.next();
-      this.destroy$.complete();
+      streamDestroy$.next();
+      streamDestroy$.complete();
       subscription.unsubscribe();
       this.activeSubscriptionCount = Math.max(0, this.activeSubscriptionCount - 1);
     };
