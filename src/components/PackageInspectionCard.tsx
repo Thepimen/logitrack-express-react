@@ -187,7 +187,7 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
               className="lt-action-btn lt-btn-inspect"
               onClick={handleMarkInspected}
               disabled={disabled || pkg.status === 'INSPECTED'}
-              aria-label={`Aprobar e inspeccionar paquete ${pkg.trackingCode} como INSPECTED`}
+              aria-label={`INSPECTED · Aprobar paquete ${pkg.trackingCode}`}
               aria-pressed={pkg.status === 'INSPECTED'}
               data-testid={`btn-inspect-${pkg.trackingCode}`}
             >
@@ -202,7 +202,7 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
               className="lt-action-btn lt-btn-reject"
               onClick={handleMarkRejected}
               disabled={disabled || pkg.status === 'REJECTED'}
-              aria-label={`Rechazar y enviar a cuarentena el paquete ${pkg.trackingCode} como REJECTED`}
+              aria-label={`REJECTED · Rechazar paquete ${pkg.trackingCode}`}
               aria-pressed={pkg.status === 'REJECTED'}
               data-testid={`btn-reject-${pkg.trackingCode}`}
             >
@@ -217,7 +217,7 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
                 className="lt-action-btn lt-btn-transit"
                 onClick={handleResetTransit}
                 disabled={disabled}
-                aria-label={`Devolver paquete ${pkg.trackingCode} a estado IN_TRANSIT en cinta`}
+                aria-label={`REINICIAR TRÁNSITO · Paquete ${pkg.trackingCode}`}
                 data-testid={`btn-transit-${pkg.trackingCode}`}
               >
                 <IonIcon slot="start" icon={refreshOutline} aria-hidden="true" />
@@ -230,7 +230,7 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
                 type="button"
                 className="lt-btn-3d-focus"
                 onClick={() => onSelect3D(pkg)}
-                aria-label={`Focalizar paquete ${pkg.trackingCode} en escáner isométrico 3D`}
+                aria-label={`VER EN 3D · Paquete ${pkg.trackingCode}`}
               >
                 VER EN 3D
               </button>

@@ -150,7 +150,7 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
                         '--parcel-accent': accentColor
                       } as React.CSSProperties
                     }
-                    aria-label={`Paquete 3D ${pkg.trackingCode}, peso ${pkg.weightKg} kg, estado ${pkg.status}`}
+                    aria-label={`${pkg.trackingCode} ${pkg.weightKg}kg · Estado ${pkg.status}`}
                   >
                     <span className="lt-cube-face lt-cube-top">
                       <span className="lt-cube-code">{pkg.trackingCode}</span>

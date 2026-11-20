@@ -91,7 +91,7 @@ export const IndustrialNavbar: React.FC<IndustrialNavbarProps> = ({ operator, on
                 type="button"
                 className="lt-logout-btn"
                 onClick={handleLogoutClick}
-                aria-label={`Cerrar turno de ${operator.fullName}`}
+                title={`Cerrar turno de ${operator.fullName}`}
               >
                 <IonIcon icon={logOutOutline} aria-hidden="true" />
                 <span>FIN TURNO</span>

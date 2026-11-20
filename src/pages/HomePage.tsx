@@ -143,7 +143,6 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState }) => {
                   size="default"
                   onClick={() => setShowCreateForm((prev) => !prev)}
                   aria-expanded={showCreateForm}
-                  aria-label="Abrir o cerrar formulario de alta de paquete con UUID v4"
                   data-testid="btn-toggle-new-package"
                 >
                   <IonIcon slot="start" icon={addCircleOutline} aria-hidden="true" />
@@ -156,7 +155,6 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState }) => {
                   size="default"
                   onClick={() => void reloadPackages()}
                   disabled={isLoading || isMutating}
-                  aria-label="Sincronizar lista de paquetes con Supabase PostgreSQL"
                   data-testid="btn-reload-packages"
                 >
                   <IonIcon slot="start" icon={refreshOutline} aria-hidden="true" />
