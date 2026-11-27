@@ -45,7 +45,7 @@ export const IndustrialNavbar: React.FC<IndustrialNavbarProps> = ({ operator, on
                 <span className="lt-brand-version">v3.0 · SAPPHIRE GLASS</span>
               </div>
               <p className="lt-brand-subtitle">
-                React 19 · Ionic v8 · Supabase PostgreSQL · AWS Emulator (LocalStack)
+                React 19 · Ionic v8 · Supabase &amp; AWS
               </p>
             </div>
           </Link>
