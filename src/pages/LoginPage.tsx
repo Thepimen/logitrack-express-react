@@ -251,7 +251,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             {/* Selector rápido de tarjetas RFID verificadas en Supabase para auditoría docente */}
             <div className="lt-preset-operators" aria-label="Tarjetas RFID de operarios registrados en Supabase">
               <span className="lt-preset-label">
-                TARJETAS RFID REGISTRADAS EN SUPABASE (`public.warehouse_operators`):
+                TARJETAS RFID REGISTRADAS EN SUPABASE (<code>public.warehouse_operators</code>):
               </span>
               <div className="lt-preset-grid">
                 <button

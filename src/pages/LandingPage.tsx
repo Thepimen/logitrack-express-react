@@ -27,10 +27,10 @@ const MORPHING_WORDS: ReadonlyArray<{
   readonly ghost: string;
   readonly tag: string;
 }> = [
-  { active: 'Telemetry', ghost: 'Manual Logs', tag: 'REAL-TIME CONVEYOR C1' },
+  { active: 'Telemetry', ghost: 'Legacy', tag: 'REAL-TIME CONVEYOR C1' },
   { active: 'UUID v4', ghost: 'Int IDs', tag: 'RFC 9562 · 128-BIT CSPRNG' },
-  { active: 'AWS Cloud', ghost: 'Local Mocks', tag: 'LOCALSTACK + SUPABASE DB' },
-  { active: 'WCAG AAA', ghost: 'Low Contrast', tag: 'LIGHTHOUSE 100/100 CERTIFIED' }
+  { active: 'AWS Cloud', ghost: 'Mocks', tag: 'LOCALSTACK + SUPABASE DB' },
+  { active: 'WCAG AAA', ghost: 'Low UI', tag: 'LIGHTHOUSE 100/100 CERTIFIED' }
 ];
 
 const LANDING_SECTIONS: ReadonlyArray<{ readonly id: string; readonly label: string }> = [
@@ -326,7 +326,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
                 <div className="lt-swatch-chip" style={{ background: '#F4F8FF', border: '1px solid #BFDBFE' }} />
                 <span className="lt-swatch-code">#F4F8FF · GLACIER CANVAS</span>
                 <h3>Descanso Retiniano</h3>
-                <p>Evita el deslumbramiento agresivo del blanco puro `#FFFFFF` reduciendo el estrés visual en sesiones prolongadas.</p>
+                <p>Evita el deslumbramiento agresivo del blanco puro <code>#FFFFFF</code> reduciendo el estrés visual en sesiones prolongadas.</p>
               </motion.article>
 
               <motion.article
@@ -348,7 +348,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
                 <div className="lt-swatch-chip" style={{ background: 'linear-gradient(135deg, #38BDF8, #BAE6FD)' }} />
                 <span className="lt-swatch-code">#38BDF8 · CERULEAN FOCUS</span>
                 <h3>Foco y Micro-Interacción</h3>
-                <p>Ilumina bordes especulares de vidrio, anillos `:focus-visible` WCAG 2.4.7 y barridos de despliegue en cascada.</p>
+                <p>Ilumina bordes especulares de vidrio, anillos <code>:focus-visible</code> WCAG 2.4.7 y barridos de despliegue en cascada.</p>
               </motion.article>
 
               <motion.article
@@ -359,7 +359,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
                 <div className="lt-swatch-chip" style={{ background: 'linear-gradient(135deg, #050B18, #0F2347)' }} />
                 <span className="lt-swatch-code">#050B18 · ABYSSAL SAPPHIRE</span>
                 <h3>Modo Nave Nocturna</h3>
-                <p>Base oscura azul profunda para la consola industrial (`/terminal`), garantizando ratios &gt; 11.5:1 nivel WCAG AAA.</p>
+                <p>Base oscura azul profunda para la consola industrial (<code>/terminal</code>), garantizando ratios &gt; 11.5:1 nivel WCAG AAA.</p>
               </motion.article>
             </div>
           </div>
@@ -416,7 +416,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
                 </div>
                 <span className="lt-bento-label">ESTABILIDAD DE MEMORIA</span>
                 <strong className="lt-bento-big lt-tabular-nums">0 Leaks</strong>
-                <p>RxJS `takeUntil` + React 19 `useDeferredValue` validados con test de estrés de 50 ciclos.</p>
+                <p>RxJS <code>takeUntil</code> + React 19 <code>useDeferredValue</code> validados con test de estrés de 50 ciclos.</p>
               </GlassyReveal>
 
               <GlassyReveal className="lt-bento-glass-card" hoverLift>
