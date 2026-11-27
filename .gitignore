@@ -12,6 +12,7 @@ build/
 .env
 .env.*
 !.env.example
+aws/.localstack-state.json
 
 # Despliegue y metadatos locales
 .vercel

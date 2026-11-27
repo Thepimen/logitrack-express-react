@@ -1,0 +1,51 @@
+# ==============================================================================
+# LogiTrack Express v3.0 — Infraestructura Local Cloud (AWS Emulator + PostgreSQL)
+# Módulo: Desarrollo de Interfaces (0488) · 2º DAM · Instituto Nebrija
+# Alumno: Luis Lázaro Pimentel (@Thepimen)
+# ==============================================================================
+# Uso con Docker Desktop:
+#   docker compose up -d
+# Uso sin Docker (Node.js 20+ nativo, mismo puerto 4566 y protocolo AWS):
+#   npm run aws:emulator
+# ==============================================================================
+
+services:
+  localstack:
+    image: localstack/localstack:3.8
+    container_name: logitrack-aws-emulator
+    ports:
+      - "4566:4566"            # LocalStack Unified AWS Edge Gateway (DynamoDB, S3, SQS, Lambda)
+      - "4510-4559:4510-4559"  # Rango de servicios externos emulados
+    environment:
+      - SERVICES=dynamodb,s3,sqs,lambda,sts
+      - AWS_DEFAULT_REGION=eu-west-3
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - DEBUG=0
+      - PERSISTENCE=1
+      - EXTRA_CORS_ALLOWED_ORIGINS=http://localhost:8100,http://127.0.0.1:8100,https://logitrack-express-react.vercel.app
+    volumes:
+      - "./aws/init-localstack.sh:/etc/localstack/init/ready.d/init-aws.sh"
+      - "localstack_data:/var/lib/localstack"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  postgres-mirror:
+    image: postgres:16-alpine
+    container_name: logitrack-postgres-local
+    ports:
+      - "54322:5432"
+    environment:
+      - POSTGRES_DB=logitrack_express
+      - POSTGRES_USER=logitrack_admin
+      - POSTGRES_PASSWORD=logitrack_local_dev
+    volumes:
+      - "./supabase/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro"
+      - "postgres_local_data:/var/lib/postgresql/data"
+
+volumes:
+  localstack_data:
+  postgres_local_data:

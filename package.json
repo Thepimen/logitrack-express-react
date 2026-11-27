@@ -1,19 +1,23 @@
 {
   "name": "logitrack-express-react",
   "private": true,
-  "version": "2.4.0",
-  "description": "Actividad 2 Evaluable - Desarrollo de Interfaces (2º DAM - Instituto Nebrija) - LogiTrack Express: Interfaz Híbrida Reactiva Industrial con Ionic v8, React 19, TypeScript Estricto, Animaciones 3D y Supabase PostgreSQL",
+  "version": "3.0.0",
+  "description": "Actividad 2 Evaluable - Desarrollo de Interfaces (2º DAM - Instituto Nebrija) - LogiTrack Express v3.0: Interfaz Híbrida Glassmorphism Azul con Ionic v8, React 19, Framer Motion, TypeScript Estricto, Supabase PostgreSQL, AWS Emulator (LocalStack) y CI/CD",
   "author": "Luis Lázaro Pimentel <luislazaropimentel@gmail.com>",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "start": "vite",
+    "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "aws:emulator": "node aws/emulator-server.mjs",
+    "aws:verify": "node aws/verify-emulator.mjs"
   },
   "dependencies": {
     "@ionic/react": "^8.5.0",
     "@supabase/supabase-js": "^2.49.1",
+    "framer-motion": "^14.14.0",
     "ionicons": "^7.4.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

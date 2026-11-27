@@ -6,6 +6,7 @@ import {
   SafeReactivePackageFilter
 } from '../services/rxjs-search-audit.service';
 import { UseWarehousePackagesReturn } from '../hooks/useWarehousePackages';
+import { GlassyReveal } from '../components/GlassyReveal';
 
 export interface WcagAndAiAuditPageProps {
   readonly warehouseState: UseWarehousePackagesReturn;
@@ -61,8 +62,9 @@ export const WcagAndAiAuditPage: React.FC<WcagAndAiAuditPageProps> = ({ warehous
         </header>
 
         {/* TAREA 4: Tabla comparativa de incumplimientos detectados y corregidos */}
+        <GlassyReveal indexDelay={0.05}>
         <section
-          className="lt-audit-card"
+          className="lt-audit-card lt-glass-panel"
           aria-labelledby="wcag-table-heading"
         >
           <span className="lt-section-kicker">TAREA 4 · DIAGNÓSTICO Y ADAPTACIÓN WCAG 2.1 NIVEL AA</span>
@@ -139,10 +141,12 @@ export const WcagAndAiAuditPage: React.FC<WcagAndAiAuditPageProps> = ({ warehous
             </table>
           </div>
         </section>
+        </GlassyReveal>
 
         {/* TAREA 5: Auditoría Crítica del Código de IA y Refactorización Reactiva */}
+        <GlassyReveal indexDelay={0.12}>
         <section
-          className="lt-audit-card"
+          className="lt-audit-card lt-glass-panel"
           aria-labelledby="task5-heading"
         >
           <div className="lt-audit-header-row">
@@ -190,6 +194,7 @@ export const WcagAndAiAuditPage: React.FC<WcagAndAiAuditPageProps> = ({ warehous
             </div>
           </div>
         </section>
+        </GlassyReveal>
       </div>
     </main>
   );

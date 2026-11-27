@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabase';
+import { awsEmulatorService } from './aws-emulator.service';
 import {
   CreatePackageInput,
   generateUuidV4,
@@ -222,6 +223,10 @@ export class PackageService {
     console.log(
       `[LogiTrack::PackageService] UPDATE estado completado -> Paquete ${updatedPkg.trackingCode} (${updatedPkg.id}) marcado como ${updatedPkg.status}`
     );
+    void awsEmulatorService.mirrorSinglePackageMutation(
+      updatedPkg,
+      newStatus === 'REJECTED' ? 'PACKAGE_REJECTED' : 'PACKAGE_INSPECTED'
+    );
     return updatedPkg;
   }
 
@@ -277,6 +282,7 @@ export class PackageService {
     console.log(
       `[LogiTrack::PackageService] INSERT paquete completado -> ${createdPkg.trackingCode} [UUID v4: ${createdPkg.id}]`
     );
+    void awsEmulatorService.mirrorSinglePackageMutation(createdPkg, 'PACKAGE_CREATED');
     return createdPkg;
   }
 
@@ -303,6 +309,12 @@ export class PackageService {
     console.log(
       `[LogiTrack::PackageService] DELETE paquete completado -> ${target?.trackingCode ?? id} eliminado de la cinta.`
     );
+    void awsEmulatorService.publishSqsEvent({
+      eventType: 'PACKAGE_DELETED',
+      trackingCode: target?.trackingCode ?? 'UNKNOWN',
+      packageId: id,
+      detail: `Paquete ${target?.trackingCode ?? id} retirado de Supabase PostgreSQL y notificado a SQS`
+    });
   }
 
   /**

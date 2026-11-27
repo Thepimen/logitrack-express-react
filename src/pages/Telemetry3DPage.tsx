@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { UseWarehousePackagesReturn } from '../hooks/useWarehousePackages';
 import { WarehousePackage, generateUuidV4 } from '../models/package.model';
 import { Conveyor3DStage } from '../components/Conveyor3DStage';
+import { GlassyReveal, GlassyStagger } from '../components/GlassyReveal';
 
 export interface Telemetry3DPageProps {
   readonly warehouseState: UseWarehousePackagesReturn;
@@ -36,19 +37,21 @@ export const Telemetry3DPage: React.FC<Telemetry3DPageProps> = ({ warehouseState
         </header>
 
         {/* Escenario Isométrico 3D Completo */}
-        <Conveyor3DStage
-          packages={packages}
-          selectedPackage={selectedPkg}
-          onSelectPackage={(pkg) => setSelectedPkg(pkg)}
-          onStatusChange={handleStatusChange}
-        />
+        <GlassyReveal indexDelay={0.05}>
+          <Conveyor3DStage
+            packages={packages}
+            selectedPackage={selectedPkg}
+            onSelectPackage={(pkg) => setSelectedPkg(pkg)}
+            onStatusChange={handleStatusChange}
+          />
+        </GlassyReveal>
 
         {/* Panel de Ingeniería: Por qué UUID v4 frente a ID Secuencial + Hooks de React 19 */}
-        <section
+        <GlassyStagger
           className="lt-arch-grid"
-          aria-label="Justificación arquitectónica de UUID v4, React Hooks y Data Binding"
+          ariaLabel="Justificación arquitectónica de UUID v4, React Hooks y Data Binding"
         >
-          <article className="lt-arch-card">
+          <GlassyReveal className="lt-arch-card lt-glass-panel" hoverLift>
             <span className="lt-section-kicker">INGENIERÍA DE DATOS &amp; SEGURIDAD (TAREA 1)</span>
             <h2>¿Por qué UUID v4 (128 bits) en lugar de un ID Autoincremental (1, 2, 3...)?</h2>
             <p>
@@ -87,9 +90,9 @@ export const Telemetry3DPage: React.FC<Telemetry3DPageProps> = ({ warehouseState
                 GENERAR NUEVO UUID v4
               </button>
             </div>
-          </article>
+          </GlassyReveal>
 
-          <article className="lt-arch-card">
+          <GlassyReveal className="lt-arch-card lt-glass-panel" hoverLift>
             <span className="lt-section-kicker">ARQUITECTURA REACT 19 + IONIC v8 vs ANGULAR</span>
             <h2>Ciclo de Vida de React Hooks e Interpolación / Property Binding</h2>
             <p>
@@ -120,8 +123,8 @@ export const Telemetry3DPage: React.FC<Telemetry3DPageProps> = ({ warehouseState
                 <code>{'disabled={isMutating}'}</code>, <code>{'onStatusChange={handleStatusChange}'}</code>).
               </li>
             </ul>
-          </article>
-        </section>
+          </GlassyReveal>
+        </GlassyStagger>
       </div>
     </main>
   );

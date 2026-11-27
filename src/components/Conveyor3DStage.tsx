@@ -33,9 +33,9 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
   };
 
   const getStatusColorHex = (status: PackageStatus): string => {
-    if (status === 'INSPECTED') return '#10B981';
-    if (status === 'REJECTED') return '#EF4444';
-    return '#F59E0B';
+    if (status === 'INSPECTED') return '#34D399';
+    if (status === 'REJECTED') return '#F87171';
+    return '#38BDF8';
   };
 
   return (

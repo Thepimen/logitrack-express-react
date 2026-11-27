@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { IonIcon } from '@ionic/react';
 import {
   fingerPrintOutline,
@@ -77,9 +78,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     <main className="lt-login-main" aria-labelledby="login-terminal-title">
       <div className="lt-login-layout">
         {/* Columna izquierda: Visor 3D de Hardware y Telemetría de Nave */}
-        <section
-          className="lt-login-telemetry-column"
+        <motion.section
+          className="lt-login-telemetry-column lt-glass-panel lt-glass-sheen"
           aria-label="Estado operativo de la planta logística MAD-HUB-01"
+          initial={{ opacity: 0, y: 22 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 230, damping: 24 }}
         >
           <div className="lt-telemetry-badge-row">
             <span className="lt-sys-pill">SISTEMA SCADA · IONIC v8 + REACT 19</span>
@@ -143,14 +147,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               <p>Contraste certificado &gt; 10.7:1 para naves de baja luminosidad.</p>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Columna derecha: Panel de Control de Acceso de Operario */}
-        <section
+        <motion.section
           className="lt-login-card-column"
           aria-labelledby="operator-auth-heading"
+          initial={{ opacity: 0, y: 26 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 230, damping: 24, delay: 0.08 }}
         >
-          <div className="lt-auth-panel">
+          <div className="lt-auth-panel lt-glass-panel lt-glass-sheen">
             <div className="lt-auth-header">
               <div className="lt-auth-icon-box" aria-hidden="true">
                 <IonIcon icon={fingerPrintOutline} />
@@ -267,7 +274,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
       </div>
     </main>
   );

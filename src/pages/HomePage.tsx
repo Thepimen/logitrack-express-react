@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   IonButton,
   IonHeader,
@@ -14,7 +15,8 @@ import {
   cubeOutline,
   filterOutline,
   refreshOutline,
-  searchOutline
+  searchOutline,
+  sparklesOutline
 } from 'ionicons/icons';
 import {
   PriorityFilter,
@@ -25,6 +27,7 @@ import { UseWarehousePackagesReturn } from '../hooks/useWarehousePackages';
 import { PackageInspectionCard } from '../components/PackageInspectionCard';
 import { Conveyor3DStage } from '../components/Conveyor3DStage';
 import { NewPackageForm } from '../components/NewPackageForm';
+import { GlassyReveal, GlassyStagger } from '../components/GlassyReveal';
 
 export interface HomePageProps {
   readonly warehouseState: UseWarehousePackagesReturn;
@@ -46,13 +49,8 @@ const STATUS_OPTIONS: ReadonlyArray<{ value: StatusFilter; label: string }> = [
 
 /**
  * Vista Principal Declarativa: HomePage (`src/pages/HomePage.tsx`)
- * Cumple íntegramente las Tareas 1, 2, 3, 4 y 5 del enunciado `DI_Actividad2.pdf`:
- * - Tarea 2.1: Layout corporativo con `ion-header` e `ion-toolbar`, título, selector de filtro de prioridad,
- *   `ion-searchbar` para búsqueda en tiempo real por `trackingCode` y `ion-list` con `ion-item-sliding`.
- * - Tarea 2.2: Control de flujo declarativo en JSX (equivalente en React a `@for`, `@if`, `@empty`).
- * - Tarea 2.3: Interpolación y Property Binding dinámico para variar bordes, insignias y atributos ARIA según estado.
- * - Tarea 3.3: Integración del componente autónomo `<PackageInspectionCard />` dentro del bucle declarativo,
- *   capturando el evento `onStatusChange` y actualizando reactivamente el estado y Supabase PostgreSQL.
+ * v3.0 — Diseño Sapphire Glassmorphism + Animación de Despliegue Escalonado (Framer Motion)
+ * Cumple íntegramente las Tareas 1, 2, 3, 4 y 5 del enunciado `DI_Actividad2.pdf`.
  */
 export const HomePage: React.FC<HomePageProps> = ({ warehouseState }) => {
   const {
@@ -80,6 +78,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState }) => {
 
   const [selected3DPackage, setSelected3DPackage] = useState<WarehousePackage | null>(null);
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
+  const [revealKey, setRevealKey] = useState<number>(0);
 
   return (
     <main className="lt-home-main" aria-label="Terminal principal de inspección de paquetes en cinta">
@@ -88,7 +87,9 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState }) => {
         <IonToolbar className="lt-filter-toolbar">
           <div className="lt-toolbar-grid">
             <div className="lt-toolbar-title-block">
-              <span className="lt-kicker-amber">TAREA 2 &amp; TAREA 3 · VISTA DECLARATIVA IONIC v8</span>
+              <span className="lt-kicker-amber">
+                TAREA 2 &amp; TAREA 3 · SAPPHIRE GLASS UI + DESPLIEGUE FRAMER MOTION
+              </span>
               <h1 className="lt-page-title">
                 Consola de Recepción e Inspección en Cinta Transportadora
               </h1>
@@ -139,7 +140,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState }) => {
               <div className="lt-toolbar-buttons">
                 <IonButton
                   fill="solid"
-                  color="warning"
+                  color="primary"
                   size="default"
                   onClick={() => setShowCreateForm((prev) => !prev)}
                   aria-expanded={showCreateForm}
@@ -153,13 +154,27 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState }) => {
                   fill="outline"
                   color="light"
                   size="default"
-                  onClick={() => void reloadPackages()}
+                  onClick={() => {
+                    setRevealKey((prev) => prev + 1);
+                    void reloadPackages();
+                  }}
                   disabled={isLoading || isMutating}
                   data-testid="btn-reload-packages"
                 >
                   <IonIcon slot="start" icon={refreshOutline} aria-hidden="true" />
                   SINCRONIZAR BD
                 </IonButton>
+
+                <button
+                  type="button"
+                  className="lt-replay-mini-btn"
+                  onClick={() => setRevealKey((prev) => prev + 1)}
+                  data-testid="btn-replay-cascade"
+                  aria-label="ANIMAR · Reproducir despliegue escalonado de datos"
+                >
+                  <IonIcon icon={sparklesOutline} aria-hidden="true" />
+                  <span>ANIMAR</span>
+                </button>
               </div>
             </div>
           </div>
@@ -167,142 +182,199 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState }) => {
       </IonHeader>
 
       <div className="lt-workspace-container">
-        {/* Panel de KPIs de Telemetría con números tabulares (emilkowalski/skills) */}
-        <section className="lt-kpi-ribbon" aria-label="Métricas en tiempo real de la cinta transportadora">
-          <div className="lt-kpi-card">
-            <span className="lt-kpi-label">UNIDADES EN CINTA (TOTAL)</span>
-            <strong className="lt-kpi-number lt-tabular-nums" data-testid="kpi-total">
-              {metrics.total}
-            </strong>
-            <span className="lt-kpi-foot">Masa acumulada: {metrics.totalWeightKg.toFixed(2)} kg</span>
-          </div>
+        {/* Panel de KPIs de Telemetría con cascada Glassy Framer Motion (Dashboard V22) */}
+        <section aria-label="Métricas en tiempo real de la cinta transportadora">
+          <GlassyStagger className="lt-kpi-ribbon" replayKey={revealKey}>
+            <GlassyReveal className="lt-kpi-card lt-glass-panel" hoverLift>
+              <span className="lt-kpi-label">UNIDADES EN CINTA (TOTAL)</span>
+              <strong className="lt-kpi-number lt-tabular-nums" data-testid="kpi-total">
+                {metrics.total}
+              </strong>
+              <span className="lt-kpi-foot">Masa acumulada: {metrics.totalWeightKg.toFixed(2)} kg</span>
+            </GlassyReveal>
 
-          <div className="lt-kpi-card lt-kpi-amber">
-            <span className="lt-kpi-label">EN TRÁNSITO (IN_TRANSIT)</span>
-            <strong className="lt-kpi-number lt-tabular-nums" data-testid="kpi-transit">
-              {metrics.inTransit}
-            </strong>
-            <span className="lt-kpi-foot">{metrics.criticalCount} paquetes de prioridad CRITICAL</span>
-          </div>
+            <GlassyReveal className="lt-kpi-card lt-kpi-sky lt-glass-panel" hoverLift>
+              <span className="lt-kpi-label">EN TRÁNSITO (IN_TRANSIT)</span>
+              <strong className="lt-kpi-number lt-tabular-nums" data-testid="kpi-transit">
+                {metrics.inTransit}
+              </strong>
+              <span className="lt-kpi-foot">{metrics.criticalCount} paquetes de prioridad CRITICAL</span>
+            </GlassyReveal>
 
-          <div className="lt-kpi-card lt-kpi-emerald">
-            <span className="lt-kpi-label">APROBADOS (INSPECTED)</span>
-            <strong className="lt-kpi-number lt-tabular-nums" data-testid="kpi-inspected">
-              {metrics.inspected}
-            </strong>
-            <span className="lt-kpi-foot">Tasa procesada: {metrics.inspectionRatePercent}%</span>
-          </div>
+            <GlassyReveal className="lt-kpi-card lt-kpi-emerald lt-glass-panel" hoverLift>
+              <span className="lt-kpi-label">APROBADOS (INSPECTED)</span>
+              <strong className="lt-kpi-number lt-tabular-nums" data-testid="kpi-inspected">
+                {metrics.inspected}
+              </strong>
+              <span className="lt-kpi-foot">Tasa procesada: {metrics.inspectionRatePercent}%</span>
+            </GlassyReveal>
 
-          <div className="lt-kpi-card lt-kpi-crimson">
-            <span className="lt-kpi-label">CUARENTENA (REJECTED)</span>
-            <strong className="lt-kpi-number lt-tabular-nums" data-testid="kpi-rejected">
-              {metrics.rejected}
-            </strong>
-            <span className="lt-kpi-foot">Desviados a bahía QUARANTINE-Q1</span>
-          </div>
+            <GlassyReveal className="lt-kpi-card lt-kpi-crimson lt-glass-panel" hoverLift>
+              <span className="lt-kpi-label">CUARENTENA (REJECTED)</span>
+              <strong className="lt-kpi-number lt-tabular-nums" data-testid="kpi-rejected">
+                {metrics.rejected}
+              </strong>
+              <span className="lt-kpi-foot">Desviados a bahía QUARANTINE-Q1</span>
+            </GlassyReveal>
+          </GlassyStagger>
         </section>
 
         {/* Banners accesibles de feedback y propagación real de errores (RA 2, RA 3, RA 4) */}
-        {errorMessage && (
-          <div className="lt-banner-error" role="alert" aria-live="assertive">
-            <div className="lt-banner-content">
-              <IonIcon icon={alertCircleOutline} aria-hidden="true" />
-              <span>{errorMessage}</span>
-            </div>
-            <button type="button" className="lt-banner-close" onClick={clearFeedback}>
-              CERRAR
-            </button>
-          </div>
-        )}
+        <AnimatePresence>
+          {errorMessage && (
+            <motion.div
+              key="err-banner"
+              className="lt-banner-error lt-glass-panel"
+              role="alert"
+              aria-live="assertive"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <div className="lt-banner-content">
+                <IonIcon icon={alertCircleOutline} aria-hidden="true" />
+                <span>{errorMessage}</span>
+              </div>
+              <button type="button" className="lt-banner-close" onClick={clearFeedback}>
+                CERRAR
+              </button>
+            </motion.div>
+          )}
 
-        {feedbackBanner && (
-          <div
-            className="lt-banner-success"
-            role="status"
-            aria-live="polite"
-            data-testid="status-feedback-banner"
-          >
-            <div className="lt-banner-content">
-              <IonIcon icon={checkmarkDoneCircleOutline} aria-hidden="true" />
-              <span>{feedbackBanner}</span>
-            </div>
-            <button type="button" className="lt-banner-close" onClick={clearFeedback}>
-              OK
-            </button>
-          </div>
-        )}
+          {feedbackBanner && (
+            <motion.div
+              key="ok-banner"
+              className="lt-banner-success lt-glass-panel"
+              role="status"
+              aria-live="polite"
+              data-testid="status-feedback-banner"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <div className="lt-banner-content">
+                <IonIcon icon={checkmarkDoneCircleOutline} aria-hidden="true" />
+                <span>{feedbackBanner}</span>
+              </div>
+              <button type="button" className="lt-banner-close" onClick={clearFeedback}>
+                OK
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Formulario desplegable de alta real en Supabase con UUID v4 */}
-        {showCreateForm && (
-          <NewPackageForm onCreatePackage={handleCreatePackage} isSubmitting={isMutating} />
-        )}
+        <AnimatePresence>
+          {showCreateForm && (
+            <motion.div
+              key="new-pkg-drawer"
+              initial={{ opacity: 0, y: -14, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12, scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+            >
+              <NewPackageForm onCreatePackage={handleCreatePackage} isSubmitting={isMutating} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Gemelo Digital Isométrico 3D integrado en la vista operativa */}
-        <Conveyor3DStage
-          packages={filteredPackages.length > 0 ? filteredPackages : packages}
-          selectedPackage={selected3DPackage}
-          onSelectPackage={(pkg) => setSelected3DPackage(pkg)}
-          onStatusChange={handleStatusChange}
-          compact
-        />
+        {/* Gemelo Digital Isométrico 3D integrado con despliegue Glassy */}
+        <GlassyReveal indexDelay={0.14}>
+          <Conveyor3DStage
+            packages={filteredPackages.length > 0 ? filteredPackages : packages}
+            selectedPackage={selected3DPackage}
+            onSelectPackage={(pkg) => setSelected3DPackage(pkg)}
+            onStatusChange={handleStatusChange}
+            compact
+          />
+        </GlassyReveal>
 
         {/* Barra de búsqueda reactiva ion-searchbar (Tarea 2.1 y Tarea 5) */}
-        <section className="lt-search-panel" aria-label="Búsqueda reactiva por código de seguimiento">
-          <div className="lt-searchbar-header">
-            <div>
-              <label htmlFor="logitrack-searchbar" className="lt-search-title">
-                <IonIcon icon={searchOutline} aria-hidden="true" /> BÚSQUEDA REACTIVA EN TIEMPO REAL
-                (TAREA 2 &amp; TAREA 5 · DEBOUNCE 180ms SIN MEMORY LEAKS)
-              </label>
-              <p className="lt-search-helper">
-                Filtra instantáneamente por <code>trackingCode</code> (ej. <code>LTK-4821-ES</code>),
-                Hub de destino o <code>UUID v4</code>.
-              </p>
+        <GlassyReveal indexDelay={0.2}>
+          <section className="lt-search-panel lt-glass-panel" aria-label="Búsqueda reactiva por código de seguimiento">
+            <div className="lt-searchbar-header">
+              <div>
+                <label htmlFor="logitrack-searchbar" className="lt-search-title">
+                  <IonIcon icon={searchOutline} aria-hidden="true" /> BÚSQUEDA REACTIVA EN TIEMPO REAL
+                  (TAREA 2 &amp; TAREA 5 · DEBOUNCE 180ms SIN MEMORY LEAKS)
+                </label>
+                <p className="lt-search-helper">
+                  Filtra instantáneamente por <code>trackingCode</code> (ej. <code>LTK-4821-ES</code>),
+                  Hub de destino o <code>UUID v4</code>.
+                </p>
+              </div>
+              <div className="lt-search-counter lt-tabular-nums" role="status" aria-live="polite">
+                MOSTRANDO <strong>{filteredPackages.length}</strong> DE <strong>{packages.length}</strong>{' '}
+                PAQUETES
+              </div>
             </div>
-            <div className="lt-search-counter lt-tabular-nums" role="status" aria-live="polite">
-              MOSTRANDO <strong>{filteredPackages.length}</strong> DE <strong>{packages.length}</strong>{' '}
-              PAQUETES
-            </div>
-          </div>
 
-          <IonSearchbar
-            id="logitrack-searchbar"
-            className="lt-ion-searchbar"
-            value={searchQuery}
-            debounce={0}
-            placeholder="Buscar por trackingCode (ej. LTK-4821-ES), Hub o UUID v4..."
-            aria-label="Buscar paquete por código de seguimiento LTK-XXXX-ES, destino o UUID"
-            onIonInput={(e) => setSearchQuery(e.detail.value ?? '')}
-            onIonClear={() => setSearchQuery('')}
-            data-testid="package-searchbar"
-          />
-        </section>
+            <IonSearchbar
+              id="logitrack-searchbar"
+              className="lt-ion-searchbar"
+              value={searchQuery}
+              debounce={0}
+              placeholder="Buscar por trackingCode (ej. LTK-4821-ES), Hub o UUID v4..."
+              aria-label="Buscar paquete por código de seguimiento LTK-XXXX-ES, destino o UUID"
+              onIonInput={(e) => setSearchQuery(e.detail.value ?? '')}
+              onIonClear={() => setSearchQuery('')}
+              data-testid="package-searchbar"
+            />
+          </section>
+        </GlassyReveal>
 
-        {/* Lista Declarativa ion-list con ion-item-sliding y control de flujo (@if / @for / @empty equivalentes en JSX) */}
+        {/* Lista Declarativa ion-list con despliegue escalonado Framer Motion (estilo video Dashboard V22) */}
         <section className="lt-list-section" aria-label="Listado de paquetes en cinta transportadora">
           {isLoading ? (
-            <div className="lt-state-box" role="status" aria-live="polite">
+            <div className="lt-state-box lt-glass-panel" role="status" aria-live="polite">
               <div className="lt-spinner" aria-hidden="true" />
               <h2>Sincronizando telemetría con Supabase PostgreSQL...</h2>
               <p>Verificando paquetes activos en la tabla public.warehouse_packages.</p>
             </div>
           ) : filteredPackages.length > 0 ? (
             <IonList className="lt-ion-list" data-testid="packages-ion-list">
-              {filteredPackages.map((pkg) => (
-                <PackageInspectionCard
-                  key={pkg.id}
-                  pkg={pkg}
-                  onStatusChange={handleStatusChange}
-                  onDeletePackage={handleDeletePackage}
-                  disabled={isMutating}
-                  onSelect3D={(selected) => setSelected3DPackage(selected)}
-                  isSelected3D={selected3DPackage?.id === pkg.id}
-                />
-              ))}
+              <AnimatePresence mode="popLayout">
+                {filteredPackages.map((pkg, index) => (
+                  <motion.div
+                    key={`${pkg.id}-${revealKey}`}
+                    layout
+                    initial={{ opacity: 0, y: 24, scale: 0.975 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -16, scale: 0.96 }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 255,
+                      damping: 25,
+                      delay: Math.min(index * 0.055, 0.38)
+                    }}
+                    whileHover={{
+                      y: -4,
+                      transition: { type: 'spring', stiffness: 360, damping: 24 }
+                    }}
+                    className="lt-glass-sheen"
+                  >
+                    <PackageInspectionCard
+                      pkg={pkg}
+                      onStatusChange={handleStatusChange}
+                      onDeletePackage={handleDeletePackage}
+                      disabled={isMutating}
+                      onSelect3D={(selected) => setSelected3DPackage(selected)}
+                      isSelected3D={selected3DPackage?.id === pkg.id}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </IonList>
           ) : (
             /* Bloque equivalente a @empty en control de flujo declarativo (Tarea 2.2) */
-            <div className="lt-empty-state" role="status" aria-live="polite" data-testid="empty-packages-state">
+            <motion.div
+              className="lt-empty-state lt-glass-panel"
+              role="status"
+              aria-live="polite"
+              data-testid="empty-packages-state"
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
               <IonIcon icon={cubeOutline} aria-hidden="true" className="lt-empty-icon" />
               <h2>No se encontraron paquetes que coincidan con los filtros activos</h2>
               <p>
@@ -317,7 +389,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState }) => {
               >
                 RESTABLECER FILTROS DE CINTA
               </button>
-            </div>
+            </motion.div>
           )}
         </section>
       </div>
