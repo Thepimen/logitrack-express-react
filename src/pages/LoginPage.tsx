@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { IonIcon } from '@ionic/react';
 import {
   keyOutline,
@@ -73,7 +74,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       <header className="lt-public-header">
         <div className="lt-public-header-inner">
           <Link to="/" className="lt-public-brand" aria-label="Volver al inicio de LogiTrack Express">
-            <BrandMark size={34} />
+            <BrandMark size={30} />
             <span className="lt-public-logo-text">LogiTrack Express</span>
           </Link>
 
@@ -91,19 +92,35 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
       <main className="lt-auth-centered-main" aria-labelledby="login-page-heading">
         <div className="lt-geo-field" aria-hidden="true">
-          <span className="lt-geo-shape lt-geo-square-left" />
-          <span className="lt-geo-shape lt-geo-circle-right" />
-          <span className="lt-geo-shape lt-geo-arc-left" />
+          <motion.span
+            className="lt-geo-shape lt-geo-square-left"
+            animate={{ y: [0, -8, 0], rotate: [14, 19, 14] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.span
+            className="lt-geo-shape lt-geo-circle-right"
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 7.2, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.span
+            className="lt-geo-shape lt-geo-arc-left"
+            animate={{ rotate: [16, 4, 16] }}
+            transition={{ duration: 8.5, repeat: Infinity, ease: 'easeInOut' }}
+          />
         </div>
 
-        <div className="lt-auth-card-shell">
+        <motion.div
+          className="lt-auth-card-shell"
+          initial={{ opacity: 0, y: 10, scale: 0.99 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+        >
           <div className="lt-auth-card-head">
             <h1 id="login-page-heading" className="lt-auth-page-title">
-              Iniciar sesión en LogiTrack Express
+              Iniciar sesión en LogiTrack
             </h1>
             <p className="lt-auth-page-sub">
-              Accede a tu turno activo para consultar envíos, inspeccionar la cinta y gestionar
-              incidencias.
+              Accede a tu turno activo para consultar envíos, inspeccionar la cinta y gestionar incidencias.
             </p>
           </div>
 
@@ -122,8 +139,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           <form onSubmit={(e) => void handleOperatorSubmit(e)} noValidate className="lt-auth-form">
             <div className="lt-field-group">
               <label htmlFor="operator-badge-input">
-                <IonIcon icon={personOutline} aria-hidden="true" /> Placa de operario o correo
-                electrónico
+                <IonIcon icon={personOutline} aria-hidden="true" /> Placa de operario o correo electrónico
               </label>
               <input
                 id="operator-badge-input"
@@ -169,6 +185,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               )}
             </div>
 
+            {isAuthenticating && (
+              <div className="lt-inline-progress-track" aria-hidden="true">
+                <motion.div
+                  className="lt-inline-progress-fill"
+                  initial={{ width: '10%' }}
+                  animate={{ width: '92%' }}
+                  transition={{ duration: 0.7, ease: 'easeOut' }}
+                />
+              </div>
+            )}
+
             <button
               type="submit"
               className="lt-btn-primary-solid lt-btn-full"
@@ -209,7 +236,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               Crear una cuenta nueva
             </Link>
           </div>
-        </div>
+        </motion.div>
       </main>
     </div>
   );

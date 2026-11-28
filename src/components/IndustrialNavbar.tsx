@@ -17,6 +17,9 @@ export interface IndustrialNavbarProps {
   readonly onLogout: () => void;
 }
 
+/**
+ * Barra Lateral Vertical Cobalto con emblema minimalista propio de LogiTrack Express.
+ */
 export const IndustrialNavbar: React.FC<IndustrialNavbarProps> = ({ operator, onLogout }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -41,9 +44,7 @@ export const IndustrialNavbar: React.FC<IndustrialNavbarProps> = ({ operator, on
   return (
     <aside className="lt-sidebar-rail" aria-label="Navegación principal de LogiTrack">
       <Link to="/" className="lt-sidebar-brand" aria-label="LogiTrack Express Inicio" title="LogiTrack Express">
-        <span className="lt-sidebar-logo-icon" aria-hidden="true">
-          <BrandMark size={38} />
-        </span>
+        <BrandMark size={36} className="lt-sidebar-brand-mark" />
         <span className="lt-sidebar-logo-short">
           <span>Logi</span>
           <span>Track</span>

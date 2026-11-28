@@ -131,7 +131,7 @@ type PackageListener = (packages: ReadonlyArray<WarehousePackage>) => void;
  * Servicio de Dominio Logístico: PackageService (Tarea 1, Tarea 2, Tarea 3, Tarea 5 y RA 5)
  * Gestiona el estado reactivo mediante snapshots inmutables (ReadonlyArray<WarehousePackage>)
  * sincronizados en tiempo real con PostgreSQL en Supabase (`public.warehouse_packages`).
- * Propaga todos los errores hacia la capa de presentación (sin ocultar fallos).
+ * Propaga todos los errores reales hacia la capa de presentación (prohibido devolver [] silencioso).
  */
 export class PackageService {
   private packagesSnapshot: ReadonlyArray<WarehousePackage> = INITIAL_WAREHOUSE_PACKAGES;

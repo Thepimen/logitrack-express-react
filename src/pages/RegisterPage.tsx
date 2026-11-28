@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { IonIcon } from '@ionic/react';
 import {
   businessOutline,
@@ -31,7 +32,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess })
   const [fullName, setFullName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [badgeId, setBadgeId] = useState<string>(() => generateSuggestedBadge());
-  const [assignedHub, setAssignedHub] = useState<string>('MAD-HUB-01, Cinta C1');
+  const [assignedHub, setAssignedHub] = useState<string>('MAD-HUB-01 - Cinta C1');
   const [shift, setShift] = useState<string>('Turno Mañana (06:00 a 14:00)');
   const [accessPin, setAccessPin] = useState<string>('');
   const [confirmPin, setConfirmPin] = useState<string>('');
@@ -86,7 +87,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess })
       <header className="lt-public-header">
         <div className="lt-public-header-inner">
           <Link to="/" className="lt-public-brand" aria-label="Volver al inicio de LogiTrack Express">
-            <BrandMark size={34} />
+            <BrandMark size={30} />
             <span className="lt-public-logo-text">LogiTrack Express</span>
           </Link>
 
@@ -104,19 +105,35 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess })
 
       <main className="lt-auth-centered-main" aria-labelledby="register-page-heading">
         <div className="lt-geo-field" aria-hidden="true">
-          <span className="lt-geo-shape lt-geo-square-left" />
-          <span className="lt-geo-shape lt-geo-circle-right" />
-          <span className="lt-geo-shape lt-geo-square-right" />
+          <motion.span
+            className="lt-geo-shape lt-geo-square-left"
+            animate={{ y: [0, -8, 0], rotate: [14, 19, 14] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.span
+            className="lt-geo-shape lt-geo-circle-right"
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 7.2, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.span
+            className="lt-geo-shape lt-geo-square-right"
+            animate={{ y: [0, -8, 0], rotate: [-12, -18, -12] }}
+            transition={{ duration: 8.2, repeat: Infinity, ease: 'easeInOut' }}
+          />
         </div>
 
-        <div className="lt-auth-card-shell lt-auth-card-wide">
+        <motion.div
+          className="lt-auth-card-shell lt-auth-card-wide"
+          initial={{ opacity: 0, y: 10, scale: 0.99 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+        >
           <div className="lt-auth-card-head">
             <h1 id="register-page-heading" className="lt-auth-page-title">
-              Crear cuenta de operario en LogiTrack
+              Crear cuenta en LogiTrack
             </h1>
             <p className="lt-auth-page-sub">
-              Configura tu perfil operativo y tu centro asignado para comenzar a gestionar envíos en
-              línea.
+              Configura tu perfil operativo y tu centro asignado para comenzar a gestionar envíos en línea.
             </p>
           </div>
 
@@ -194,10 +211,10 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess })
                 onChange={(e) => setAssignedHub(e.target.value)}
                 className="lt-select"
               >
-                <option value="MAD-HUB-01, Cinta C1">Madrid Coslada (Cinta C1)</option>
-                <option value="BCN-ZAL, Sector A2">Barcelona ZAL (Sector A2)</option>
-                <option value="VLC-Puerto, Hub Este">Valencia Puerto (Hub Este)</option>
-                <option value="SVQ-Aerópolis, Sur">Sevilla Aerópolis (Sur)</option>
+                <option value="MAD-HUB-01 - Cinta C1">Madrid Coslada (Cinta C1)</option>
+                <option value="BCN-ZAL - Sector A2">Barcelona ZAL (Sector A2)</option>
+                <option value="VLC-Puerto - Hub Este">Valencia Puerto (Hub Este)</option>
+                <option value="SVQ-Aerópolis - Sur">Sevilla Aerópolis (Sur)</option>
               </select>
             </div>
 
@@ -256,6 +273,16 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess })
             </div>
 
             <div className="lt-col-span-2">
+              {isRegistering && (
+                <div className="lt-inline-progress-track" aria-hidden="true" style={{ marginBottom: 10 }}>
+                  <motion.div
+                    className="lt-inline-progress-fill"
+                    initial={{ width: '12%' }}
+                    animate={{ width: '92%' }}
+                    transition={{ duration: 0.75, ease: 'easeOut' }}
+                  />
+                </div>
+              )}
               <button
                 type="submit"
                 className="lt-btn-primary-solid lt-btn-full"
@@ -274,7 +301,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess })
               Inicia sesión aquí
             </Link>
           </div>
-        </div>
+        </motion.div>
       </main>
     </div>
   );

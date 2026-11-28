@@ -47,7 +47,7 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
               Cinta transportadora activa en línea C1 (MAD-HUB-01)
             </h2>
             <p className="lt-conveyor-sub">
-              Seguimiento espacial en directo con {packages.length} envíos cargados en movimiento
+              Seguimiento espacial en directo ({packages.length} envíos en movimiento)
             </p>
           </div>
         </div>
@@ -111,7 +111,7 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
 
               <div className="lt-laser-gantry" aria-hidden="true">
                 <div className="lt-gantry-bridge">
-                  <span className="lt-gantry-label">ESCÁNER ÓPTICO S04</span>
+                  <span className="lt-gantry-label">ESCÁNER ÓPTICO · S04</span>
                 </div>
                 <div className="lt-laser-sheet" />
               </div>
@@ -176,7 +176,7 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
               <div>
                 <dt>Peso y prioridad</dt>
                 <dd className="lt-tabular-nums">
-                  {activePkg.weightKg.toFixed(2)} kg ({activePkg.priority})
+                  {activePkg.weightKg.toFixed(2)} kg · {activePkg.priority}
                 </dd>
               </div>
               <div>

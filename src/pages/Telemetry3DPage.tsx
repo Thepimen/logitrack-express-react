@@ -3,6 +3,7 @@ import { UseWarehousePackagesReturn } from '../hooks/useWarehousePackages';
 import { WarehousePackage, generateUuidV4 } from '../models/package.model';
 import { ThemeToggleButton } from '../context/ThemeContext';
 import { Conveyor3DStage } from '../components/Conveyor3DStage';
+import { GlassyReveal } from '../components/GlassyReveal';
 
 export interface Telemetry3DPageProps {
   readonly warehouseState: UseWarehousePackagesReturn;
@@ -18,11 +19,10 @@ export const Telemetry3DPage: React.FC<Telemetry3DPageProps> = ({ warehouseState
       <header className="lt-subpage-topbar">
         <div>
           <h1 id="telemetry-page-heading" className="lt-subpage-title">
-            Cinta transportadora en 3D y trazabilidad de bultos
+            Cinta Transportadora 3D y Trazabilidad de Bultos
           </h1>
           <p className="lt-subpage-desc">
-            Inspección espacial de la línea activa con selección directa de cada envío y control de
-            cámara.
+            Inspección espacial de la línea activa con selección directa de cada envío y control de cámara.
           </p>
         </div>
         <div className="lt-subpage-topbar-actions">
@@ -35,60 +35,56 @@ export const Telemetry3DPage: React.FC<Telemetry3DPageProps> = ({ warehouseState
       </header>
 
       <main className="lt-subpage-main" aria-labelledby="telemetry-page-heading">
-        <Conveyor3DStage
-          packages={packages}
-          selectedPackage={selectedPkg}
-          onSelectPackage={(pkg) => setSelectedPkg(pkg)}
-          onStatusChange={handleStatusChange}
-        />
+        <GlassyReveal indexDelay={0.03} shimmer={false}>
+          <Conveyor3DStage
+            packages={packages}
+            selectedPackage={selectedPkg}
+            onSelectPackage={(pkg) => setSelectedPkg(pkg)}
+            onStatusChange={handleStatusChange}
+          />
+        </GlassyReveal>
 
-        {/* Sección informativa abierta con divisor fino en lugar de tarjetas repetidas */}
-        <section
-          className="lt-open-info-band"
-          aria-label="Información operativa de trazabilidad y manejo de la vista tridimensional"
-        >
-          <div className="lt-editorial-split-2">
-            <div className="lt-editorial-split-col">
-              <h2>Identificación irrepetible para cada bulto entre centros</h2>
-              <p className="lt-muted-desc">
-                Cada paquete recibe un código único de 128 bits al entrar en el muelle de carga.
-                Esto evita duplicados aunque varios centros registren mercancía simultáneamente e
-                impide deducir códigos de envíos ajenos.
-              </p>
-              <div className="lt-uuid-inspector">
-                <div>
-                  <span className="lt-mono-label">Ejemplo de referencia generada</span>
-                  <code className="lt-uuid-highlight">{sampleRef}</code>
-                </div>
-                <button
-                  type="button"
-                  className="lt-btn-secondary-surface lt-btn-sm"
-                  onClick={() => setSampleRef(generateUuidV4())}
-                >
-                  Generar nueva referencia
-                </button>
+        <div className="lt-two-col-info" aria-label="Información operativa de trazabilidad y seguridad de envíos">
+          <section className="lt-surface-card lt-info-card">
+            <h2>Trazabilidad irrepetible para cada bulto entre centros</h2>
+            <p className="lt-muted-desc">
+              Cada paquete recibe un código único de 128 bits al entrar en el muelle de carga. Esto
+              garantiza que nunca existan duplicados aunque varios centros registren mercancía al
+              mismo tiempo y evita accesos no autorizados a envíos ajenos.
+            </p>
+            <div className="lt-uuid-inspector">
+              <div>
+                <span className="lt-mono-label">Ejemplo de referencia activa</span>
+                <code className="lt-uuid-highlight">{sampleRef}</code>
               </div>
+              <button
+                type="button"
+                className="lt-btn-secondary-surface lt-btn-sm"
+                onClick={() => setSampleRef(generateUuidV4())}
+              >
+                Generar nueva referencia
+              </button>
             </div>
+          </section>
 
-            <div className="lt-editorial-split-col">
-              <h2>Cómo operar la inspección desde el plano tridimensional</h2>
-              <ul className="lt-tech-list">
-                <li>
-                  <strong>Selección directa en cinta:</strong> Pulsa sobre cualquier caja de la
-                  cinta 3D para consultar su centro de destino, peso verificado y notas del turno.
-                </li>
-                <li>
-                  <strong>Clasificación inmediata desde el visor:</strong> Aprueba o deriva envíos a
-                  cuarentena desde el panel lateral sincronizando el cambio en todo el centro.
-                </li>
-                <li>
-                  <strong>Ajuste manual del ángulo de cámara:</strong> Modifica inclinación,
-                  rotación o pausa el desplazamiento para revisar zonas con alta densidad de carga.
-                </li>
-              </ul>
-            </div>
-          </div>
-        </section>
+          <section className="lt-surface-card lt-info-card">
+            <h2>Inspección directa desde el plano tridimensional</h2>
+            <ul className="lt-tech-list">
+              <li>
+                <strong>Selección instantánea:</strong> Haz clic sobre cualquier caja de la cinta 3D
+                para revisar su centro de destino, peso en báscula y observaciones del turno.
+              </li>
+              <li>
+                <strong>Clasificación en un toque:</strong> Aprueba o deriva envíos a cuarentena
+                directamente desde el panel lateral sincronizando el cambio en toda la planta.
+              </li>
+              <li>
+                <strong>Control de cámara libre:</strong> Ajusta la inclinación, la rotación o pausa
+                la cinta para inspeccionar zonas de alta densidad de carga.
+              </li>
+            </ul>
+          </section>
+        </div>
       </main>
     </div>
   );

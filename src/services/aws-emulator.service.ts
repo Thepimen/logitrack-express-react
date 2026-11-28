@@ -143,7 +143,7 @@ export class AwsEmulatorService {
       eventType: 'BATCH_SYNC',
       trackingCode: 'LTK-4821-ES',
       packageId: 'a1f4e8c2-7b3d-4e9a-9c1b-2d8f6a4e5b10',
-      detail: 'Registro cronológico de eventos preparado y vinculado a la copia de seguridad',
+      detail: 'Bus SQS logitrack-inspection-events inicializado · Enlace dual con Supabase PostgreSQL activo',
       sentTimestamp: new Date().toISOString()
     };
 
@@ -468,7 +468,7 @@ export class AwsEmulatorService {
           if (data.MD5OfMessageBody) md5 = data.MD5OfMessageBody;
         }
       } catch {
-        // Uso de respaldo en memoria local
+        // Fallback silencioso a sandbox
       }
     }
 

@@ -6,10 +6,11 @@ export interface BrandMarkProps {
 }
 
 /**
- * Emblema geométrico personalizado de LogiTrack Express
- * Representa un bulto isométrico sobre cinta transportadora en azul cobalto.
+ * Emblema minimalista de LogiTrack Express:
+ * Monograma geométrico L + bloque de carga sobre azul cobalto.
+ * Coincide exactamente con `public/favicon.svg`.
  */
-export const BrandMark: React.FC<BrandMarkProps> = ({ size = 34, className = '' }) => {
+export const BrandMark: React.FC<BrandMarkProps> = ({ size = 32, className = '' }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -19,15 +20,20 @@ export const BrandMark: React.FC<BrandMarkProps> = ({ size = 34, className = '' 
       fill="none"
       aria-hidden="true"
       className={className}
+      style={{ display: 'block', flexShrink: 0 }}
     >
-      <rect x="2" y="2" width="60" height="60" rx="12" fill="#1D4ED8" />
-      <polygon points="32,12 50,21.5 32,31 14,21.5" fill="#FFFFFF" />
-      <polygon points="14,23.5 30.8,32.4 30.8,47.5 14,38.6" fill="#93C5FD" />
-      <polygon points="50,23.5 33.2,32.4 33.2,47.5 50,38.6" fill="#EFF6FF" />
-      <rect x="12" y="50" width="40" height="4.5" rx="2.25" fill="#7DD3FC" />
-      <rect x="18" y="51.25" width="7" height="2" rx="1" fill="#1E3A8A" />
-      <rect x="28.5" y="51.25" width="7" height="2" rx="1" fill="#1E3A8A" />
-      <rect x="39" y="51.25" width="7" height="2" rx="1" fill="#1E3A8A" />
+      <defs>
+        <linearGradient id="ltBrandMinBg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#2563EB" />
+          <stop offset="100%" stop-color="#1D4ED8" />
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#ltBrandMinBg)" />
+      <path
+        d="M19 16C19 14.8954 19.8954 14 21 14H26C27.1046 14 28 14.8954 28 16V39H46C47.1046 39 48 39.8954 48 41V46C48 47.1046 47.1046 48 46 48H21C19.8954 48 19 47.1046 19 46V16Z"
+        fill="#FFFFFF"
+      />
+      <rect x="34" y="16" width="14" height="14" rx="3.5" fill="#93C5FD" />
     </svg>
   );
 };

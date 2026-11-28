@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   IonHeader,
   IonIcon,
@@ -12,6 +13,9 @@ import {
   alertCircleOutline,
   checkmarkCircleOutline,
   checkmarkDoneCircleOutline,
+  chevronBackOutline,
+  chevronDownOutline,
+  chevronForwardOutline,
   cubeOutline,
   filterOutline,
   layersOutline,
@@ -27,6 +31,14 @@ import { UseWarehousePackagesReturn } from '../hooks/useWarehousePackages';
 import { ThemeToggleButton } from '../context/ThemeContext';
 import { PackageInspectionCard } from '../components/PackageInspectionCard';
 import { NewPackageForm } from '../components/NewPackageForm';
+import { GlassyReveal, GlassyStagger } from '../components/GlassyReveal';
+import {
+  AnimatedDonutRing,
+  AnimatedMetricNumber,
+  AnimatedProgressBar,
+  AnimatedSparkline,
+  TopLoadingProgressBar
+} from '../components/LiveProgressWidgets';
 
 export interface HomePageProps {
   readonly warehouseState: UseWarehousePackagesReturn;
@@ -63,6 +75,15 @@ function cleanSeparator(value: string): string {
   return value.replace(/\s*[·•]\s*/g, ' - ');
 }
 
+/**
+ * Panel Principal Operativo (`/terminal`) — Edición v4.1
+ * - Conserva el diseño Bento compacto y vivo de v4.0 (banner cobalto, 3 KPIs Sparkline,
+ *   Donut de eficiencia, barras de sector, listado paginado 3/página y columna de perfil/agenda).
+ * - Barra superior corregida sin sombra gris recortada, en una sola fila limpia y con el
+ *   buscador centrado matemáticamente (`0 px` de desviación) + select personalizado sin bordes nativos.
+ * - Momentos vivos de carga progresiva (barra superior 0%->100%, contadores incrementales,
+ *   trazado de donut y llenado progresivo de cada barra de sector).
+ */
 export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) => {
   const {
     packages,
@@ -89,6 +110,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
 
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [revealKey, setRevealKey] = useState<number>(0);
 
   const totalPages = Math.max(1, Math.ceil(filteredPackages.length / ITEMS_PER_PAGE));
 
@@ -118,10 +140,10 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
     const b3 = packages.filter((p) => p.aisleBay.includes('B3')).length;
     const q1 = packages.filter((p) => p.status === 'REJECTED').length;
     return [
-      { label: 'Cinta C1 de prioridad alta', count: c1, pct: Math.min(100, Math.round((c1 / total) * 100)), tone: 'cobalt' },
-      { label: 'Cinta A2 de envíos aprobados', count: a2, pct: Math.min(100, Math.round((a2 / total) * 100)), tone: 'emerald' },
-      { label: 'Bahía B3 de consolidación', count: b3, pct: Math.min(100, Math.round((b3 / total) * 100)), tone: 'sky' },
-      { label: 'Cuarentena Q1 de incidencias', count: q1, pct: Math.min(100, Math.round((q1 / total) * 100)), tone: 'coral' }
+      { label: 'Cinta C1 - Prioridad alta', count: c1, pct: Math.min(100, Math.round((c1 / total) * 100)), tone: 'cobalt' },
+      { label: 'Cinta A2 - Verificados', count: a2, pct: Math.min(100, Math.round((a2 / total) * 100)), tone: 'emerald' },
+      { label: 'Bahía B3 - Consolidación', count: b3, pct: Math.min(100, Math.round((b3 / total) * 100)), tone: 'sky' },
+      { label: 'Cuarentena Q1 - Incidencias', count: q1, pct: Math.min(100, Math.round((q1 / total) * 100)), tone: 'coral' }
     ];
   }, [packages]);
 
@@ -131,17 +153,12 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
     .map((part) => part[0]?.toUpperCase() ?? '')
     .join('');
 
-  const cleanAssignedHub = cleanSeparator(operator?.assignedHub ?? 'MAD-HUB-01, Cinta C1');
-
-  const donutRadius = 42;
-  const donutCircumference = 2 * Math.PI * donutRadius;
-  const donutOffset =
-    donutCircumference - (metrics.inspectionRatePercent / 100) * donutCircumference;
+  const cleanHub = cleanSeparator(operator?.assignedHub ?? 'MAD-HUB-01 - Cinta C1');
 
   return (
     <div className="lt-dash-wrapper">
-      {/* Barra superior equilibrada con la barra de búsqueda centrada en el medio */}
-      <IonHeader className="lt-dash-top-header">
+      {/* Cabecera en una sola fila sin sombra Ionic MD, con buscador centrado */}
+      <IonHeader className="lt-dash-top-header ion-no-border">
         <IonToolbar className="lt-dash-top-toolbar">
           <div className="lt-dash-topbar-grid">
             <div className="lt-dash-topbar-brand">
@@ -164,7 +181,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
 
             <div className="lt-dash-top-controls">
               <div className="lt-inline-select-wrap">
-                <IonIcon icon={filterOutline} aria-hidden="true" />
+                <IonIcon icon={filterOutline} className="lt-select-lead-icon" aria-hidden="true" />
                 <select
                   id="priority-filter-select"
                   className="lt-compact-select"
@@ -179,25 +196,29 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                     </option>
                   ))}
                 </select>
+                <IonIcon icon={chevronDownOutline} className="lt-select-chevron" aria-hidden="true" />
               </div>
 
               <button
                 type="button"
-                className="lt-btn-primary-solid lt-btn-sm"
+                className="lt-btn-primary-solid lt-btn-sm lt-btn-nowrap"
                 onClick={() => setShowCreateForm((prev) => !prev)}
                 aria-expanded={showCreateForm}
                 data-testid="btn-toggle-new-package"
               >
                 <IonIcon icon={addOutline} aria-hidden="true" />
-                <span>{showCreateForm ? 'Cerrar formulario' : 'Nuevo envío'}</span>
+                <span>{showCreateForm ? 'Cerrar alta' : 'Nuevo envío'}</span>
               </button>
 
               <button
                 type="button"
                 className="lt-icon-pill-btn"
-                onClick={() => void reloadPackages()}
+                onClick={() => {
+                  setRevealKey((prev) => prev + 1);
+                  void reloadPackages();
+                }}
                 disabled={isLoading || isMutating}
-                aria-label="Actualizar listado de envíos"
+                aria-label="Actualizar datos y recargar barras"
                 title="Actualizar envíos"
                 data-testid="btn-reload-packages"
               >
@@ -210,147 +231,190 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
         </IonToolbar>
       </IonHeader>
 
+      {/* Barra fina de carga progresiva en vivo */}
+      <TopLoadingProgressBar
+        triggerKey={revealKey}
+        isBusy={isLoading || isMutating}
+        label="Sincronizando datos de la línea de clasificación"
+      />
+
       <main className="lt-bento-main" aria-label="Panel operativo principal de LogiTrack Express">
-        {errorMessage && (
-          <div className="lt-banner-error" role="alert" aria-live="assertive">
-            <div className="lt-banner-content">
-              <IonIcon icon={alertCircleOutline} aria-hidden="true" />
-              <span>{errorMessage}</span>
-            </div>
-            <button type="button" className="lt-banner-close" onClick={clearFeedback}>
-              Cerrar
-            </button>
-          </div>
-        )}
+        <AnimatePresence>
+          {errorMessage && (
+            <motion.div
+              key="err-banner"
+              className="lt-banner-error"
+              role="alert"
+              aria-live="assertive"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.22 }}
+            >
+              <div className="lt-banner-content">
+                <IonIcon icon={alertCircleOutline} aria-hidden="true" />
+                <span>{errorMessage}</span>
+              </div>
+              <button type="button" className="lt-banner-close" onClick={clearFeedback}>
+                Cerrar
+              </button>
+            </motion.div>
+          )}
 
-        {feedbackBanner && (
-          <div
-            className="lt-banner-success"
-            role="status"
-            aria-live="polite"
-            data-testid="status-feedback-banner"
-          >
-            <div className="lt-banner-content">
-              <IonIcon icon={checkmarkDoneCircleOutline} aria-hidden="true" />
-              <span>{feedbackBanner}</span>
-            </div>
-            <button type="button" className="lt-banner-close" onClick={clearFeedback}>
-              Aceptar
-            </button>
-          </div>
-        )}
+          {feedbackBanner && (
+            <motion.div
+              key="ok-banner"
+              className="lt-banner-success"
+              role="status"
+              aria-live="polite"
+              data-testid="status-feedback-banner"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.22 }}
+            >
+              <div className="lt-banner-content">
+                <IonIcon icon={checkmarkDoneCircleOutline} aria-hidden="true" />
+                <span>{feedbackBanner}</span>
+              </div>
+              <button type="button" className="lt-banner-close" onClick={clearFeedback}>
+                Aceptar
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {showCreateForm && (
-          <NewPackageForm onCreatePackage={handleCreatePackage} isSubmitting={isMutating} />
-        )}
+        <AnimatePresence>
+          {showCreateForm && (
+            <motion.div
+              key="create-drawer"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <NewPackageForm onCreatePackage={handleCreatePackage} isSubmitting={isMutating} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="lt-bento-two-col">
-          {/* Columna izquierda principal */}
+          {/* COLUMNA IZQUIERDA PRINCIPAL */}
           <div className="lt-bento-left-col">
-            {/* Banner de bienvenida sin píldora sobre el titular */}
+            {/* 1. Banner de bienvenida operativa en Azul Cobalto */}
             <section className="lt-welcome-banner" aria-labelledby="dash-greeting-title">
               <div className="lt-welcome-content">
                 <h1 id="dash-greeting-title" className="lt-welcome-title">
-                  Panel de turno activo para {operator?.fullName.split(' ')[0] ?? 'Luis'}
+                  Buen turno, {operator?.fullName.split(' ')[0] ?? 'Luis'}
                 </h1>
                 <p className="lt-welcome-sub">
-                  28 de noviembre de 2026 en {cleanAssignedHub}: tienes{' '}
-                  <strong>{metrics.inTransit} envíos</strong> pendientes en cinta con un peso
-                  acumulado de {metrics.totalWeightKg.toFixed(1)} kg.
+                  28 de noviembre de 2026 en {cleanHub}: tienes{' '}
+                  <strong>{metrics.inTransit} envíos</strong> pendientes de inspección en cinta ({metrics.totalWeightKg.toFixed(1)} kg acumulados).
                 </p>
               </div>
               <div className="lt-welcome-actions">
                 <Link to="/telemetry" className="lt-welcome-ghost-btn">
                   <IonIcon icon={layersOutline} aria-hidden="true" />
-                  <span>Abrir cinta en 3D</span>
+                  <span>Abrir cinta 3D</span>
                 </Link>
               </div>
             </section>
 
-            {/* Tira unificada abierta de indicadores (evita caja por cada número, sin curvas inventadas) */}
-            <section className="lt-unified-kpi-strip" aria-label="Resumen numérico de envíos">
-              <div className="lt-kpi-strip-cell">
-                <span className="lt-spark-label">Envíos pendientes en cinta</span>
-                <div className="lt-kpi-strip-row">
-                  <strong className="lt-tabular-nums" data-testid="kpi-transit">
-                    {metrics.inTransit}
-                  </strong>
-                  <span className="lt-spark-pill lt-pill-info">
-                    {metrics.criticalCount} de prioridad crítica
-                  </span>
+            {/* 2. Fila de 3 KPIs Compactos con Sparklines animados progresivamente */}
+            <GlassyStagger className="lt-spark-kpi-row" replayKey={revealKey}>
+              <GlassyReveal className="lt-surface-card lt-spark-card" hoverLift>
+                <span className="lt-spark-label">En cinta en tránsito</span>
+                <div className="lt-spark-body">
+                  <AnimatedSparkline
+                    d="M4 30 C18 28, 24 8, 42 16 C56 22, 68 10, 84 6"
+                    colorClass="lt-spark-sky"
+                    delay={0.08}
+                    replayKey={revealKey}
+                  />
+                  <div className="lt-spark-metrics">
+                    <strong className="lt-tabular-nums" data-testid="kpi-transit">
+                      <AnimatedMetricNumber value={metrics.inTransit} replayKey={revealKey} />
+                    </strong>
+                    <span className="lt-spark-caption">envíos activos</span>
+                    <span className="lt-spark-pill lt-pill-info">{metrics.criticalCount} críticos</span>
+                  </div>
                 </div>
-              </div>
+              </GlassyReveal>
 
-              <div className="lt-kpi-strip-cell">
-                <span className="lt-spark-label">Envíos aprobados en turno</span>
-                <div className="lt-kpi-strip-row">
-                  <strong className="lt-tabular-nums" data-testid="kpi-inspected">
-                    {metrics.inspected}
-                  </strong>
-                  <span className="lt-spark-pill lt-pill-ok">
-                    {metrics.inspectionRatePercent}% clasificado
-                  </span>
+              <GlassyReveal className="lt-surface-card lt-spark-card" hoverLift>
+                <span className="lt-spark-label">Envíos aprobados</span>
+                <div className="lt-spark-body">
+                  <AnimatedSparkline
+                    d="M4 32 C20 30, 32 24, 48 18 C64 12, 74 10, 84 4"
+                    colorClass="lt-spark-emerald"
+                    delay={0.16}
+                    replayKey={revealKey}
+                  />
+                  <div className="lt-spark-metrics">
+                    <strong className="lt-tabular-nums" data-testid="kpi-inspected">
+                      <AnimatedMetricNumber value={metrics.inspected} replayKey={revealKey} />
+                    </strong>
+                    <span className="lt-spark-caption">verificados OK</span>
+                    <span className="lt-spark-pill lt-pill-ok">{metrics.inspectionRatePercent}% completado</span>
+                  </div>
                 </div>
-              </div>
+              </GlassyReveal>
 
-              <div className="lt-kpi-strip-cell">
-                <span className="lt-spark-label">Envíos en cuarentena</span>
-                <div className="lt-kpi-strip-row">
-                  <strong className="lt-tabular-nums" data-testid="kpi-rejected">
-                    {metrics.rejected}
-                  </strong>
-                  <span className="lt-spark-pill lt-pill-warn" data-testid="kpi-total">
-                    Sobre {metrics.total} totales
-                  </span>
+              <GlassyReveal className="lt-surface-card lt-spark-card" hoverLift>
+                <span className="lt-spark-label">En cuarentena</span>
+                <div className="lt-spark-body">
+                  <AnimatedSparkline
+                    d="M4 12 C22 14, 34 26, 52 24 C66 22, 74 30, 84 28"
+                    colorClass="lt-spark-coral"
+                    delay={0.24}
+                    replayKey={revealKey}
+                  />
+                  <div className="lt-spark-metrics">
+                    <strong className="lt-tabular-nums" data-testid="kpi-rejected">
+                      <AnimatedMetricNumber value={metrics.rejected} replayKey={revealKey} />
+                    </strong>
+                    <span className="lt-spark-caption">incidencias</span>
+                    <span className="lt-spark-pill lt-pill-warn" data-testid="kpi-total">
+                      de {metrics.total} totales
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </section>
+              </GlassyReveal>
+            </GlassyStagger>
 
-            {/* Fila analítica compacta: Donut + Cinta de Tareas por Sector */}
+            {/* 3. Fila Analítica Compacta: Donut animado + Barras de progreso por sector */}
             <div className="lt-analytics-row">
-              <section className="lt-surface-card lt-donut-card">
+              <GlassyReveal className="lt-surface-card lt-donut-card" hoverLift indexDelay={0.08}>
                 <div className="lt-card-mini-head">
-                  <h2>Estado general de clasificación</h2>
-                  <span className="lt-mini-chip">Turno actual</span>
+                  <h2>Estado de clasificación</h2>
+                  <span className="lt-mini-chip">Turno hoy</span>
                 </div>
                 <div className="lt-donut-body">
-                  <div className="lt-donut-ring-box">
-                    <svg viewBox="0 0 100 100" className="lt-donut-svg" aria-hidden="true">
-                      <circle cx="50" cy="50" r={donutRadius} className="lt-donut-track" />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r={donutRadius}
-                        className="lt-donut-fill"
-                        strokeDasharray={donutCircumference}
-                        strokeDashoffset={donutOffset}
-                      />
-                    </svg>
-                    <div className="lt-donut-center lt-tabular-nums">
-                      <strong>{metrics.inspectionRatePercent}%</strong>
-                      <span>Gestionado</span>
-                    </div>
-                  </div>
+                  <AnimatedDonutRing
+                    percent={metrics.inspectionRatePercent}
+                    radius={42}
+                    replayKey={revealKey}
+                  />
                   <div className="lt-donut-legend lt-tabular-nums">
                     <div>
                       <strong>{metrics.criticalCount}</strong>
-                      <span>Envíos de prioridad crítica</span>
+                      <span>Prioridad crítica</span>
                     </div>
                     <div>
                       <strong>{packages.filter((p) => p.priority === 'STANDARD').length}</strong>
-                      <span>Envíos de prioridad estándar</span>
+                      <span>Prioridad estándar</span>
                     </div>
                     <div>
                       <strong>{packages.filter((p) => p.priority === 'LOW').length}</strong>
-                      <span>Envíos de prioridad baja</span>
+                      <span>Prioridad baja</span>
                     </div>
                   </div>
                 </div>
-              </section>
+              </GlassyReveal>
 
-              <section className="lt-surface-card lt-sectors-card">
+              <GlassyReveal className="lt-surface-card lt-sectors-card" hoverLift indexDelay={0.14}>
                 <div className="lt-card-mini-head">
-                  <h2>Distribución de tareas por sector de cinta</h2>
+                  <h2>Cinta de tareas por sector</h2>
                   <button
                     type="button"
                     className="lt-text-action-btn"
@@ -360,7 +424,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                   </button>
                 </div>
                 <div className="lt-sector-bars">
-                  {sectorStats.map((sec) => (
+                  {sectorStats.map((sec, idx) => (
                     <div key={sec.label} className="lt-sector-row">
                       <div className="lt-sector-meta">
                         <span>{sec.label}</span>
@@ -368,26 +432,25 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                           {sec.count} u. ({sec.pct}%)
                         </strong>
                       </div>
-                      <div className="lt-bar-track" aria-hidden="true">
-                        <div
-                          className={`lt-bar-fill lt-bar-${sec.tone}`}
-                          style={{ width: `${Math.max(8, sec.pct)}%` }}
-                        />
-                      </div>
+                      <AnimatedProgressBar
+                        targetPct={sec.pct}
+                        tone={sec.tone}
+                        delay={0.12 + idx * 0.1}
+                        replayKey={revealKey}
+                      />
                     </div>
                   ))}
                 </div>
-              </section>
+              </GlassyReveal>
             </div>
 
-            {/* Listado paginado de envíos en cinta (3 por página, filas planas con divisores finos) */}
+            {/* 4. Listado Paginado de Envíos en Cinta (3 por página) */}
             <section className="lt-surface-card lt-paginated-section" aria-label="Listado paginado de envíos en cinta">
               <div className="lt-paginated-header">
                 <div>
-                  <h2 className="lt-paginated-title">Listado de envíos en cinta e inspección</h2>
+                  <h2 className="lt-paginated-title">Cinta de envíos e inspección</h2>
                   <p className="lt-paginated-sub lt-tabular-nums" role="status" aria-live="polite">
-                    Mostrando {paginatedPackages.length} de {filteredPackages.length} envíos en página{' '}
-                    {currentPage} de {totalPages}
+                    Mostrando {paginatedPackages.length} de {filteredPackages.length} envíos en página {currentPage} de {totalPages}
                   </p>
                 </div>
 
@@ -408,13 +471,22 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
               </div>
 
               {isLoading ? (
-                <div className="lt-empty-compact" role="status" aria-live="polite">
-                  <p>Cargando envíos de la línea activa...</p>
+                <div className="lt-loading-skeleton-stack" role="status" aria-live="polite">
+                  <div className="lt-loading-skel-row" />
+                  <div className="lt-loading-skel-row" />
+                  <div className="lt-loading-skel-row" />
+                  <p className="lt-loading-skel-caption">Cargando envíos de la línea activa...</p>
                 </div>
               ) : paginatedPackages.length > 0 ? (
                 <>
                   <IonList className="lt-ion-list" data-testid="packages-ion-list">
-                    <div className="lt-ion-list-page-group">
+                    <motion.div
+                      key={`page-${currentPage}-${statusFilter}-${priorityFilter}-${revealKey}`}
+                      className="lt-ion-list-page-group"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    >
                       {paginatedPackages.map((pkg) => (
                         <PackageInspectionCard
                           key={pkg.id}
@@ -424,7 +496,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                           disabled={isMutating}
                         />
                       ))}
-                    </div>
+                    </motion.div>
                   </IonList>
 
                   <nav className="lt-pagination-bar" aria-label="Paginación de envíos">
@@ -435,7 +507,8 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                       disabled={currentPage <= 1}
                       data-testid="btn-page-prev"
                     >
-                      Anterior
+                      <IonIcon icon={chevronBackOutline} aria-hidden="true" />
+                      <span>Anterior</span>
                     </button>
 
                     <div className="lt-page-numbers">
@@ -460,7 +533,8 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                       disabled={currentPage >= totalPages}
                       data-testid="btn-page-next"
                     >
-                      Siguiente
+                      <span>Siguiente</span>
+                      <IonIcon icon={chevronForwardOutline} aria-hidden="true" />
                     </button>
                   </nav>
                 </>
@@ -469,8 +543,8 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                   <IonIcon icon={cubeOutline} aria-hidden="true" className="lt-empty-icon" />
                   <h3>No se encontraron envíos con estos filtros</h3>
                   <p>
-                    Búsqueda actual: <strong>{debouncedQuery || 'sin texto'}</strong> con filtro de
-                    prioridad <strong>{priorityFilter}</strong>
+                    Búsqueda: <strong>{debouncedQuery || 'ninguna'}</strong> con prioridad{' '}
+                    <strong>{priorityFilter}</strong>
                   </p>
                   <button
                     type="button"
@@ -485,22 +559,20 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
             </section>
           </div>
 
-          {/* Columna derecha: Perfil operativo + Calendario y pendientes en cinta */}
-          <aside className="lt-bento-right-col" aria-label="Perfil operativo y tareas pendientes en cinta">
+          {/* COLUMNA DERECHA: Perfil del Operario + Calendario y Cinta de Tareas */}
+          <aside className="lt-bento-right-col" aria-label="Perfil operativo y tareas inmediatas">
             <section className="lt-surface-card lt-profile-card">
               <div className="lt-profile-cobalt-bar">
-                <span>Perfil del operario conectado</span>
-                <span>Activo</span>
+                <span>Mi perfil operativo</span>
+                <span className="lt-profile-status-dot">En turno</span>
               </div>
               <div className="lt-profile-body">
                 <div className="lt-profile-identity">
                   <div className="lt-avatar-circle" aria-hidden="true">{initials}</div>
                   <div>
                     <h2>{operator?.fullName ?? 'Luis Lázaro Pimentel'}</h2>
-                    <p className="lt-profile-role">
-                      {operator?.role ?? 'Inspector jefe de operaciones'}
-                    </p>
-                    <p className="lt-profile-hub">{cleanAssignedHub}</p>
+                    <p className="lt-profile-role">{operator?.role ?? 'Inspector Jefe de Operaciones'}</p>
+                    <p className="lt-profile-hub">{cleanHub}</p>
                   </div>
                 </div>
                 <div className="lt-profile-stats lt-tabular-nums">
@@ -513,7 +585,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                     <strong>{metrics.total}</strong>
                   </div>
                   <div>
-                    <span>Masa total</span>
+                    <span>Masa</span>
                     <strong>{metrics.totalWeightKg.toFixed(1)} kg</strong>
                   </div>
                 </div>
@@ -522,7 +594,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
 
             <section className="lt-surface-card lt-calendar-card">
               <div className="lt-profile-cobalt-bar">
-                <span>Calendario y cinta de tareas</span>
+                <span>Turno y cinta de tareas</span>
                 <span>Noviembre</span>
               </div>
               <div className="lt-calendar-body">
@@ -536,7 +608,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                 </div>
 
                 <div className="lt-tasks-feed-head">
-                  <h3>Envíos pendientes en cinta</h3>
+                  <h3>Pendientes en cinta</h3>
                   <span className="lt-tabular-nums">{pendingBeltTasks.length} en cola</span>
                 </div>
 
@@ -544,8 +616,9 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                   {pendingBeltTasks.length > 0 ? (
                     pendingBeltTasks.map((task) => (
                       <li key={task.id} className="lt-quick-task-item">
+                        <span className={`lt-task-dot lt-dot-${task.priority.toLowerCase()}`} aria-hidden="true" />
                         <div className="lt-quick-task-info">
-                          <strong>{task.trackingCode}</strong>
+                          <strong className="lt-tabular-nums">{task.trackingCode}</strong>
                           <span>{task.destinationHub}</span>
                         </div>
                         <button
@@ -553,7 +626,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                           className="lt-quick-approve-btn"
                           disabled={isMutating}
                           onClick={() => void handleStatusChange({ id: task.id, newStatus: 'INSPECTED' })}
-                          aria-label={`Aprobar rápidamente envío ${task.trackingCode}`}
+                          aria-label={`Aprobar rápido ${task.trackingCode}`}
                           title={`Aprobar ${task.trackingCode}`}
                         >
                           <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" />
@@ -562,14 +635,14 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                     ))
                   ) : (
                     <li className="lt-quick-task-done">
-                      Todos los envíos del turno han sido clasificados.
+                      Todos los envíos de la cinta están verificados.
                     </li>
                   )}
                 </ul>
 
-                <Link to="/telemetry" className="lt-btn-secondary-surface lt-btn-sm lt-btn-full">
+                <Link to="/telemetry" className="lt-btn-secondary-surface lt-btn-full">
                   <IonIcon icon={layersOutline} aria-hidden="true" />
-                  <span>Abrir simulación 3D completa</span>
+                  <span>Ver simulación 3D completa</span>
                 </Link>
               </div>
             </section>
