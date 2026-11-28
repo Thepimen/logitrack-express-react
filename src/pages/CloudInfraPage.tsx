@@ -27,7 +27,9 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
   operatorBadge
 }) => {
   const { packages, metrics } = warehouseState;
-  const [snapshot, setSnapshot] = useState<AwsEmulatorSnapshot | null>(null);
+  const [snapshot, setSnapshot] = useState<AwsEmulatorSnapshot>(() =>
+    awsEmulatorService.getSyncSnapshot(packages)
+  );
   const [statusLog, setStatusLog] = useState<string>(
     'Sincronización activa: los registros principales, las copias rápidas y los manifiestos de turno están actualizados.'
   );

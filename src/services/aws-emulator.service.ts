@@ -203,6 +203,25 @@ export class AwsEmulatorService {
     return this.mode;
   }
 
+  public getSyncSnapshot(seedPackages?: ReadonlyArray<WarehousePackage>): AwsEmulatorSnapshot {
+    if (this.sandbox.dynamoItems.length === 0 && seedPackages && seedPackages.length > 0) {
+      this.sandbox.dynamoItems = seedPackages.map(mapPackageToDynamoItem);
+      this.saveSandbox();
+    }
+    return Object.freeze({
+      mode: this.mode,
+      endpoint: this.endpoint,
+      region: this.region,
+      dynamoTable: this.dynamoTable,
+      s3Bucket: this.s3Bucket,
+      sqsQueue: this.sqsQueue,
+      latencyMs: this.lastLatencyMs,
+      dynamoItems: Object.freeze([...this.sandbox.dynamoItems]),
+      s3Objects: Object.freeze([...this.sandbox.s3Objects]),
+      sqsMessages: Object.freeze([...this.sandbox.sqsMessages])
+    });
+  }
+
   public async getSnapshot(seedPackages?: ReadonlyArray<WarehousePackage>): Promise<AwsEmulatorSnapshot> {
     await this.detectRuntimeMode();
 
@@ -510,7 +529,7 @@ export class AwsEmulatorService {
       eventType,
       trackingCode: pkg.trackingCode,
       packageId: pkg.id,
-      detail: `Cambio sincronizado en copia de respaldo: ${pkg.trackingCode} → ${pkg.status} (${pkg.destinationHub})`
+      detail: `Cambio sincronizado en copia de respaldo: ${pkg.trackingCode} en estado ${pkg.status} (${pkg.destinationHub})`
     });
   }
 }

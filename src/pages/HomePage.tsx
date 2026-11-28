@@ -36,7 +36,7 @@ export interface HomePageProps {
 const ITEMS_PER_PAGE = 3;
 
 const PRIORITY_OPTIONS: ReadonlyArray<{ value: PriorityFilter; label: string }> = [
-  { value: 'ALL', label: 'Todas las prioridades' },
+  { value: 'ALL', label: 'Prioridades' },
   { value: 'CRITICAL', label: 'Prioridad crítica' },
   { value: 'STANDARD', label: 'Prioridad estándar' },
   { value: 'LOW', label: 'Prioridad baja' }
@@ -154,7 +154,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                 className="lt-dash-searchbar"
                 value={searchQuery}
                 debounce={0}
-                placeholder="Buscar envío (ej. LTK-4821-ES), centro destino o bahía..."
+                placeholder="Buscar envío, destino o bahía..."
                 aria-label="Buscar envío por código, destino o bahía"
                 onIonInput={(e) => setSearchQuery(e.detail.value ?? '')}
                 onIonClear={() => setSearchQuery('')}

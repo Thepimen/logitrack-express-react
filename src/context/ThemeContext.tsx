@@ -38,7 +38,7 @@ function applyThemeToDocument(mode: AppThemeMode): void {
 
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if (metaTheme) {
-    metaTheme.setAttribute('content', mode === 'dark' ? '#070E1D' : '#F3F7FE');
+    metaTheme.setAttribute('content', mode === 'dark' ? '#081020' : '#F4F7FB');
   }
 }
 
