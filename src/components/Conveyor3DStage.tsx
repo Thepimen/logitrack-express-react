@@ -42,13 +42,12 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
     >
       <div className="lt-conveyor-3d-topbar">
         <div className="lt-conveyor-title-group">
-          <span className="lt-live-dot" aria-hidden="true" />
           <div>
             <h2 className="lt-conveyor-heading">
-              CINTA TRANSPORTADORA EN VIVO · LÍNEA C1 (MAD-HUB-01)
+              Cinta transportadora activa en línea C1 (MAD-HUB-01)
             </h2>
             <p className="lt-conveyor-sub">
-              Seguimiento espacial en tiempo real ({packages.length} envíos en movimiento)
+              Seguimiento espacial en directo con {packages.length} envíos cargados en movimiento
             </p>
           </div>
         </div>
@@ -112,7 +111,7 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
 
               <div className="lt-laser-gantry" aria-hidden="true">
                 <div className="lt-gantry-bridge">
-                  <span className="lt-gantry-label">ESCÁNER ÓPTICO · S04</span>
+                  <span className="lt-gantry-label">ESCÁNER ÓPTICO S04</span>
                 </div>
                 <div className="lt-laser-sheet" />
               </div>
@@ -177,12 +176,12 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
               <div>
                 <dt>Peso y prioridad</dt>
                 <dd className="lt-tabular-nums">
-                  {activePkg.weightKg.toFixed(2)} kg · {activePkg.priority}
+                  {activePkg.weightKg.toFixed(2)} kg ({activePkg.priority})
                 </dd>
               </div>
               <div>
                 <dt>Sector de cinta</dt>
-                <dd>{activePkg.aisleBay}</dd>
+                <dd>{activePkg.aisleBay.replace(/\s*[·•]\s*/g, ' / ')}</dd>
               </div>
               <div>
                 <dt>Notas de inspección</dt>

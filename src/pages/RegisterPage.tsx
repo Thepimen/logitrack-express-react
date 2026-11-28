@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { IonIcon } from '@ionic/react';
 import {
-  arrowForwardOutline,
   businessOutline,
-  cubeOutline,
   idCardOutline,
   keyOutline,
   lockClosedOutline,
@@ -17,6 +14,7 @@ import {
 import { WarehouseOperator } from '../models/operator.model';
 import { authService } from '../services/auth.service';
 import { ThemeToggleButton } from '../context/ThemeContext';
+import { BrandMark } from '../components/BrandMark';
 
 export interface RegisterPageProps {
   readonly onRegisterSuccess: (operator: WarehouseOperator) => void;
@@ -27,19 +25,14 @@ function generateSuggestedBadge(): string {
   return `OP-MAD-${num}`;
 }
 
-/**
- * Página dedicada de Registro de Operario (`/register`)
- * - Diseñada en total armonía visual con la Landing Page y el Inicio de Sesión.
- * - Persiste el alta real del nuevo operario en base de datos y accede al panel.
- */
 export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess }) => {
   const navigate = useNavigate();
 
   const [fullName, setFullName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [badgeId, setBadgeId] = useState<string>(() => generateSuggestedBadge());
-  const [assignedHub, setAssignedHub] = useState<string>('MAD-HUB-01 · Cinta C1');
-  const [shift, setShift] = useState<string>('Turno Mañana (06:00 – 14:00)');
+  const [assignedHub, setAssignedHub] = useState<string>('MAD-HUB-01, Cinta C1');
+  const [shift, setShift] = useState<string>('Turno Mañana (06:00 a 14:00)');
   const [accessPin, setAccessPin] = useState<string>('');
   const [confirmPin, setConfirmPin] = useState<string>('');
   const [submitted, setSubmitted] = useState<boolean>(false);
@@ -93,10 +86,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess })
       <header className="lt-public-header">
         <div className="lt-public-header-inner">
           <Link to="/" className="lt-public-brand" aria-label="Volver al inicio de LogiTrack Express">
-            <span className="lt-public-logo-mark" aria-hidden="true">
-              <IonIcon icon={cubeOutline} />
-            </span>
-            <span className="lt-public-logo-text">LogiTrack</span>
+            <BrandMark size={34} />
+            <span className="lt-public-logo-text">LogiTrack Express</span>
           </Link>
 
           <div className="lt-public-auth-actions">
@@ -113,36 +104,19 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess })
 
       <main className="lt-auth-centered-main" aria-labelledby="register-page-heading">
         <div className="lt-geo-field" aria-hidden="true">
-          <motion.span
-            className="lt-geo-shape lt-geo-square-left"
-            animate={{ y: [0, -10, 0], rotate: [16, 22, 16] }}
-            transition={{ duration: 7.4, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.span
-            className="lt-geo-shape lt-geo-circle-right"
-            animate={{ y: [0, 12, 0], scale: [1, 1.07, 1] }}
-            transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.span
-            className="lt-geo-shape lt-geo-square-right"
-            animate={{ y: [0, -10, 0], rotate: [-14, -20, -14] }}
-            transition={{ duration: 7.8, repeat: Infinity, ease: 'easeInOut' }}
-          />
+          <span className="lt-geo-shape lt-geo-square-left" />
+          <span className="lt-geo-shape lt-geo-circle-right" />
+          <span className="lt-geo-shape lt-geo-square-right" />
         </div>
 
-        <motion.div
-          className="lt-auth-card-shell lt-auth-card-wide"
-          initial={{ opacity: 0, y: 24, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 230, damping: 24 }}
-        >
+        <div className="lt-auth-card-shell lt-auth-card-wide">
           <div className="lt-auth-card-head">
-            <span className="lt-kicker-accent">ALTA DE NUEVO OPERARIO</span>
             <h1 id="register-page-heading" className="lt-auth-page-title">
-              Crear cuenta en LogiTrack
+              Crear cuenta de operario en LogiTrack
             </h1>
             <p className="lt-auth-page-sub">
-              Configura tu perfil operativo y tu centro asignado para comenzar a gestionar envíos en línea.
+              Configura tu perfil operativo y tu centro asignado para comenzar a gestionar envíos en
+              línea.
             </p>
           </div>
 
@@ -220,10 +194,10 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess })
                 onChange={(e) => setAssignedHub(e.target.value)}
                 className="lt-select"
               >
-                <option value="MAD-HUB-01 · Cinta C1">Madrid Coslada · Cinta C1</option>
-                <option value="BCN-ZAL · Sector A2">Barcelona ZAL · Sector A2</option>
-                <option value="VLC-Puerto · Hub Este">Valencia Puerto · Hub Este</option>
-                <option value="SVQ-Aerópolis · Sur">Sevilla Aerópolis · Sur</option>
+                <option value="MAD-HUB-01, Cinta C1">Madrid Coslada (Cinta C1)</option>
+                <option value="BCN-ZAL, Sector A2">Barcelona ZAL (Sector A2)</option>
+                <option value="VLC-Puerto, Hub Este">Valencia Puerto (Hub Este)</option>
+                <option value="SVQ-Aerópolis, Sur">Sevilla Aerópolis (Sur)</option>
               </select>
             </div>
 
@@ -237,9 +211,9 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess })
                 onChange={(e) => setShift(e.target.value)}
                 className="lt-select"
               >
-                <option value="Turno Mañana (06:00 – 14:00)">Turno Mañana (06:00 – 14:00)</option>
-                <option value="Turno Tarde (14:00 – 22:00)">Turno Tarde (14:00 – 22:00)</option>
-                <option value="Turno Noche (22:00 – 06:00)">Turno Noche (22:00 – 06:00)</option>
+                <option value="Turno Mañana (06:00 a 14:00)">Turno Mañana (06:00 a 14:00)</option>
+                <option value="Turno Tarde (14:00 a 22:00)">Turno Tarde (14:00 a 22:00)</option>
+                <option value="Turno Noche (22:00 a 06:00)">Turno Noche (22:00 a 06:00)</option>
               </select>
             </div>
 
@@ -290,7 +264,6 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess })
               >
                 <IonIcon icon={personAddOutline} aria-hidden="true" />
                 <span>{isRegistering ? 'Creando cuenta...' : 'Crear cuenta y acceder al panel'}</span>
-                <IonIcon icon={arrowForwardOutline} aria-hidden="true" />
               </button>
             </div>
           </form>
@@ -301,7 +274,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess })
               Inicia sesión aquí
             </Link>
           </div>
-        </motion.div>
+        </div>
       </main>
     </div>
   );

@@ -21,8 +21,8 @@ export const DEFAULT_SHIFT_OPERATOR: WarehouseOperator = Object.freeze({
   fullName: 'Luis Lázaro Pimentel',
   email: 'llazaro@logitrack-express.es',
   role: 'Inspector Jefe de Operaciones',
-  assignedHub: 'MAD-HUB-01 · Cinta C1',
-  shift: 'Turno Continuo · Centro Madrid',
+  assignedHub: 'MAD-HUB-01, Cinta C1',
+  shift: 'Turno Continuo (Centro Madrid)',
   active: true
 });
 
@@ -158,7 +158,7 @@ export class AuthService {
       email: cleanEmail,
       access_pin: cleanPin,
       role: input.role.trim() || 'Operador de Clasificación',
-      assigned_hub: input.assignedHub.trim() || 'MAD-HUB-01 · Cinta C1',
+      assigned_hub: input.assignedHub.trim() || 'MAD-HUB-01, Cinta C1',
       shift: input.shift.trim() || 'Turno Mañana',
       active: true
     };

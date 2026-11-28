@@ -34,7 +34,7 @@ export const NewPackageForm: React.FC<NewPackageFormProps> = ({
   const [weightKg, setWeightKg] = useState<string>('14.50');
   const [priority, setPriority] = useState<PackagePriority>('CRITICAL');
   const [status, setStatus] = useState<PackageStatus>('IN_TRANSIT');
-  const [aisleBay, setAisleBay] = useState<string>('CONVEYOR-C1 · S04');
+  const [aisleBay, setAisleBay] = useState<string>('CONVEYOR-C1 / S04');
   const [inspectorNotes, setInspectorNotes] = useState<string>(
     'Recepción verificada en pórtico de entrada'
   );
@@ -92,7 +92,6 @@ export const NewPackageForm: React.FC<NewPackageFormProps> = ({
     <section className="lt-surface-card lt-new-pkg-card" aria-labelledby="new-package-heading">
       <div className="lt-new-pkg-header">
         <div>
-          <span className="lt-kicker-accent">ALTA DE MERCANCÍA EN LÍNEA</span>
           <h2 id="new-package-heading" className="lt-section-title">
             Registrar nuevo envío en cinta transportadora
           </h2>

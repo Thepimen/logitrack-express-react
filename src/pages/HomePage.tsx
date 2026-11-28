@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
 import {
   IonHeader,
   IonIcon,
@@ -11,16 +10,12 @@ import {
 import {
   addOutline,
   alertCircleOutline,
-  calendarOutline,
   checkmarkCircleOutline,
   checkmarkDoneCircleOutline,
-  chevronBackOutline,
-  chevronForwardOutline,
   cubeOutline,
   filterOutline,
   layersOutline,
-  refreshOutline,
-  sparklesOutline
+  refreshOutline
 } from 'ionicons/icons';
 import {
   PriorityFilter,
@@ -32,7 +27,6 @@ import { UseWarehousePackagesReturn } from '../hooks/useWarehousePackages';
 import { ThemeToggleButton } from '../context/ThemeContext';
 import { PackageInspectionCard } from '../components/PackageInspectionCard';
 import { NewPackageForm } from '../components/NewPackageForm';
-import { GlassyReveal, GlassyStagger } from '../components/GlassyReveal';
 
 export interface HomePageProps {
   readonly warehouseState: UseWarehousePackagesReturn;
@@ -43,9 +37,9 @@ const ITEMS_PER_PAGE = 3;
 
 const PRIORITY_OPTIONS: ReadonlyArray<{ value: PriorityFilter; label: string }> = [
   { value: 'ALL', label: 'Todas las prioridades' },
-  { value: 'CRITICAL', label: 'Prioridad Crítica' },
-  { value: 'STANDARD', label: 'Prioridad Estándar' },
-  { value: 'LOW', label: 'Prioridad Baja' }
+  { value: 'CRITICAL', label: 'Prioridad crítica' },
+  { value: 'STANDARD', label: 'Prioridad estándar' },
+  { value: 'LOW', label: 'Prioridad baja' }
 ];
 
 const STATUS_TABS: ReadonlyArray<{ value: StatusFilter; label: string }> = [
@@ -65,14 +59,10 @@ const WEEK_DAYS: ReadonlyArray<{ readonly day: string; readonly num: number; rea
   { day: 'Dom', num: 29 }
 ];
 
-/**
- * Panel Principal Operativo (`/terminal`)
- * - Layout Bento compacto "de un vistazo" inspirado en el referente visual del cliente:
- *   barra superior con buscador + filtros + botón Claro/Oscuro, columna principal con
- *   banner de turno, 3 tarjetas KPI con curvas de tendencia, gráfico donut + barras de
- *   progreso de la cinta de tareas, listado paginado (3 envíos por página) y columna
- *   derecha fija con Mi Perfil Operativo y Agenda/Cinta Activa.
- */
+function cleanSeparator(value: string): string {
+  return value.replace(/\s*[·•]\s*/g, ' - ');
+}
+
 export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) => {
   const {
     packages,
@@ -99,7 +89,6 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
 
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [revealKey, setRevealKey] = useState<number>(0);
 
   const totalPages = Math.max(1, Math.ceil(filteredPackages.length / ITEMS_PER_PAGE));
 
@@ -129,10 +118,10 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
     const b3 = packages.filter((p) => p.aisleBay.includes('B3')).length;
     const q1 = packages.filter((p) => p.status === 'REJECTED').length;
     return [
-      { label: 'Cinta C1 · Prioridad Alta', count: c1, pct: Math.min(100, Math.round((c1 / total) * 100)), tone: 'cobalt' },
-      { label: 'Cinta A2 · Verificados', count: a2, pct: Math.min(100, Math.round((a2 / total) * 100)), tone: 'emerald' },
-      { label: 'Bahía B3 · Consolidación', count: b3, pct: Math.min(100, Math.round((b3 / total) * 100)), tone: 'sky' },
-      { label: 'Cuarentena Q1 · Incidencias', count: q1, pct: Math.min(100, Math.round((q1 / total) * 100)), tone: 'coral' }
+      { label: 'Cinta C1 de prioridad alta', count: c1, pct: Math.min(100, Math.round((c1 / total) * 100)), tone: 'cobalt' },
+      { label: 'Cinta A2 de envíos aprobados', count: a2, pct: Math.min(100, Math.round((a2 / total) * 100)), tone: 'emerald' },
+      { label: 'Bahía B3 de consolidación', count: b3, pct: Math.min(100, Math.round((b3 / total) * 100)), tone: 'sky' },
+      { label: 'Cuarentena Q1 de incidencias', count: q1, pct: Math.min(100, Math.round((q1 / total) * 100)), tone: 'coral' }
     ];
   }, [packages]);
 
@@ -142,6 +131,8 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
     .map((part) => part[0]?.toUpperCase() ?? '')
     .join('');
 
+  const cleanAssignedHub = cleanSeparator(operator?.assignedHub ?? 'MAD-HUB-01, Cinta C1');
+
   const donutRadius = 42;
   const donutCircumference = 2 * Math.PI * donutRadius;
   const donutOffset =
@@ -149,11 +140,15 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
 
   return (
     <div className="lt-dash-wrapper">
-      {/* Barra superior compacta (IonHeader + IonToolbar + IonSearchbar + Selector Prioridad + Tema Claro/Oscuro) */}
+      {/* Barra superior equilibrada con la barra de búsqueda centrada en el medio */}
       <IonHeader className="lt-dash-top-header">
         <IonToolbar className="lt-dash-top-toolbar">
-          <div className="lt-dash-topbar-inner">
-            <div className="lt-dash-search-wrap">
+          <div className="lt-dash-topbar-grid">
+            <div className="lt-dash-topbar-brand">
+              <span className="lt-topbar-area-name">Panel de clasificación</span>
+            </div>
+
+            <div className="lt-dash-search-center">
               <IonSearchbar
                 id="logitrack-searchbar"
                 className="lt-dash-searchbar"
@@ -194,33 +189,19 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                 data-testid="btn-toggle-new-package"
               >
                 <IonIcon icon={addOutline} aria-hidden="true" />
-                <span>{showCreateForm ? 'Cerrar alta' : 'Nuevo envío'}</span>
+                <span>{showCreateForm ? 'Cerrar formulario' : 'Nuevo envío'}</span>
               </button>
 
               <button
                 type="button"
                 className="lt-icon-pill-btn"
-                onClick={() => {
-                  setRevealKey((prev) => prev + 1);
-                  void reloadPackages();
-                }}
+                onClick={() => void reloadPackages()}
                 disabled={isLoading || isMutating}
-                aria-label="Actualizar datos"
+                aria-label="Actualizar listado de envíos"
                 title="Actualizar envíos"
                 data-testid="btn-reload-packages"
               >
                 <IonIcon icon={refreshOutline} aria-hidden="true" />
-              </button>
-
-              <button
-                type="button"
-                className="lt-icon-pill-btn"
-                onClick={() => setRevealKey((prev) => prev + 1)}
-                aria-label="Reproducir animación de panel"
-                title="Reproducir despliegue visual"
-                data-testid="btn-replay-cascade"
-              >
-                <IonIcon icon={sparklesOutline} aria-hidden="true" />
               </button>
 
               <ThemeToggleButton compact />
@@ -230,145 +211,107 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
       </IonHeader>
 
       <main className="lt-bento-main" aria-label="Panel operativo principal de LogiTrack Express">
-        {/* Alertas accesibles de estado */}
-        <AnimatePresence>
-          {errorMessage && (
-            <motion.div
-              key="err-banner"
-              className="lt-banner-error"
-              role="alert"
-              aria-live="assertive"
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-            >
-              <div className="lt-banner-content">
-                <IonIcon icon={alertCircleOutline} aria-hidden="true" />
-                <span>{errorMessage}</span>
-              </div>
-              <button type="button" className="lt-banner-close" onClick={clearFeedback}>
-                Cerrar
-              </button>
-            </motion.div>
-          )}
+        {errorMessage && (
+          <div className="lt-banner-error" role="alert" aria-live="assertive">
+            <div className="lt-banner-content">
+              <IonIcon icon={alertCircleOutline} aria-hidden="true" />
+              <span>{errorMessage}</span>
+            </div>
+            <button type="button" className="lt-banner-close" onClick={clearFeedback}>
+              Cerrar
+            </button>
+          </div>
+        )}
 
-          {feedbackBanner && (
-            <motion.div
-              key="ok-banner"
-              className="lt-banner-success"
-              role="status"
-              aria-live="polite"
-              data-testid="status-feedback-banner"
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-            >
-              <div className="lt-banner-content">
-                <IonIcon icon={checkmarkDoneCircleOutline} aria-hidden="true" />
-                <span>{feedbackBanner}</span>
-              </div>
-              <button type="button" className="lt-banner-close" onClick={clearFeedback}>
-                Aceptar
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {feedbackBanner && (
+          <div
+            className="lt-banner-success"
+            role="status"
+            aria-live="polite"
+            data-testid="status-feedback-banner"
+          >
+            <div className="lt-banner-content">
+              <IonIcon icon={checkmarkDoneCircleOutline} aria-hidden="true" />
+              <span>{feedbackBanner}</span>
+            </div>
+            <button type="button" className="lt-banner-close" onClick={clearFeedback}>
+              Aceptar
+            </button>
+          </div>
+        )}
 
-        {/* Cajón desplegable de alta de nuevo envío */}
-        <AnimatePresence>
-          {showCreateForm && (
-            <motion.div
-              key="create-drawer"
-              initial={{ opacity: 0, y: -12, scale: 0.985 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.985 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-            >
-              <NewPackageForm onCreatePackage={handleCreatePackage} isSubmitting={isMutating} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {showCreateForm && (
+          <NewPackageForm onCreatePackage={handleCreatePackage} isSubmitting={isMutating} />
+        )}
 
-        {/* Grid Bento Principal en 2 columnas (inspirado directamente en el referente visual) */}
         <div className="lt-bento-two-col">
-          {/* COLUMNA IZQUIERDA: Banner + 3 KPIs Sparkline + Donut/Sectores + Envíos Paginados */}
+          {/* Columna izquierda principal */}
           <div className="lt-bento-left-col">
-            {/* 1. Banner de bienvenida operativa en Azul Cobalto */}
-            <GlassyReveal indexDelay={0.02}>
-              <section className="lt-welcome-banner" aria-labelledby="dash-greeting-title">
-                <div className="lt-welcome-content">
-                  <span className="lt-welcome-date-pill">
-                    <IonIcon icon={calendarOutline} aria-hidden="true" />
-                    <span>28 nov 2026 · Turno Operativo Activo</span>
+            {/* Banner de bienvenida sin píldora sobre el titular */}
+            <section className="lt-welcome-banner" aria-labelledby="dash-greeting-title">
+              <div className="lt-welcome-content">
+                <h1 id="dash-greeting-title" className="lt-welcome-title">
+                  Panel de turno activo para {operator?.fullName.split(' ')[0] ?? 'Luis'}
+                </h1>
+                <p className="lt-welcome-sub">
+                  28 de noviembre de 2026 en {cleanAssignedHub}: tienes{' '}
+                  <strong>{metrics.inTransit} envíos</strong> pendientes en cinta con un peso
+                  acumulado de {metrics.totalWeightKg.toFixed(1)} kg.
+                </p>
+              </div>
+              <div className="lt-welcome-actions">
+                <Link to="/telemetry" className="lt-welcome-ghost-btn">
+                  <IonIcon icon={layersOutline} aria-hidden="true" />
+                  <span>Abrir cinta en 3D</span>
+                </Link>
+              </div>
+            </section>
+
+            {/* Tira unificada abierta de indicadores (evita caja por cada número, sin curvas inventadas) */}
+            <section className="lt-unified-kpi-strip" aria-label="Resumen numérico de envíos">
+              <div className="lt-kpi-strip-cell">
+                <span className="lt-spark-label">Envíos pendientes en cinta</span>
+                <div className="lt-kpi-strip-row">
+                  <strong className="lt-tabular-nums" data-testid="kpi-transit">
+                    {metrics.inTransit}
+                  </strong>
+                  <span className="lt-spark-pill lt-pill-info">
+                    {metrics.criticalCount} de prioridad crítica
                   </span>
-                  <h1 id="dash-greeting-title" className="lt-welcome-title">
-                    ¡Buen turno, {operator?.fullName.split(' ')[0] ?? 'Luis'}!
-                  </h1>
-                  <p className="lt-welcome-sub">
-                    {operator?.assignedHub ?? 'MAD-HUB-01 · Cinta C1'} —{' '}
-                    <strong>{metrics.inTransit} envíos</strong> pendientes de inspección en cinta ({metrics.totalWeightKg.toFixed(1)} kg acumulados).
-                  </p>
                 </div>
-                <div className="lt-welcome-actions">
-                  <Link to="/telemetry" className="lt-welcome-ghost-btn">
-                    <IonIcon icon={layersOutline} aria-hidden="true" />
-                    <span>Abrir Cinta 3D</span>
-                  </Link>
-                </div>
-              </section>
-            </GlassyReveal>
+              </div>
 
-            {/* 2. Fila de 3 KPIs Compactos con Sparklines SVG (estilo Medcare) */}
-            <GlassyStagger className="lt-spark-kpi-row" replayKey={revealKey}>
-              <GlassyReveal className="lt-surface-card lt-spark-card" hoverLift>
-                <span className="lt-spark-label">EN CINTA · TRÁNSITO</span>
-                <div className="lt-spark-body">
-                  <svg className="lt-spark-svg lt-spark-sky" viewBox="0 0 88 38" aria-hidden="true">
-                    <path d="M4 30 C18 28, 24 8, 42 16 C56 22, 68 10, 84 6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                  </svg>
-                  <div className="lt-spark-metrics">
-                    <strong className="lt-tabular-nums" data-testid="kpi-transit">{metrics.inTransit}</strong>
-                    <span className="lt-spark-caption">envíos activos</span>
-                    <span className="lt-spark-pill lt-pill-info">{metrics.criticalCount} críticos</span>
-                  </div>
+              <div className="lt-kpi-strip-cell">
+                <span className="lt-spark-label">Envíos aprobados en turno</span>
+                <div className="lt-kpi-strip-row">
+                  <strong className="lt-tabular-nums" data-testid="kpi-inspected">
+                    {metrics.inspected}
+                  </strong>
+                  <span className="lt-spark-pill lt-pill-ok">
+                    {metrics.inspectionRatePercent}% clasificado
+                  </span>
                 </div>
-              </GlassyReveal>
+              </div>
 
-              <GlassyReveal className="lt-surface-card lt-spark-card" hoverLift>
-                <span className="lt-spark-label">INSPECCIONADOS</span>
-                <div className="lt-spark-body">
-                  <svg className="lt-spark-svg lt-spark-emerald" viewBox="0 0 88 38" aria-hidden="true">
-                    <path d="M4 32 C20 30, 32 24, 48 18 C64 12, 74 10, 84 4" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                  </svg>
-                  <div className="lt-spark-metrics">
-                    <strong className="lt-tabular-nums" data-testid="kpi-inspected">{metrics.inspected}</strong>
-                    <span className="lt-spark-caption">verificados OK</span>
-                    <span className="lt-spark-pill lt-pill-ok">{metrics.inspectionRatePercent}% completado</span>
-                  </div>
+              <div className="lt-kpi-strip-cell">
+                <span className="lt-spark-label">Envíos en cuarentena</span>
+                <div className="lt-kpi-strip-row">
+                  <strong className="lt-tabular-nums" data-testid="kpi-rejected">
+                    {metrics.rejected}
+                  </strong>
+                  <span className="lt-spark-pill lt-pill-warn" data-testid="kpi-total">
+                    Sobre {metrics.total} totales
+                  </span>
                 </div>
-              </GlassyReveal>
+              </div>
+            </section>
 
-              <GlassyReveal className="lt-surface-card lt-spark-card" hoverLift>
-                <span className="lt-spark-label">EN CUARENTENA</span>
-                <div className="lt-spark-body">
-                  <svg className="lt-spark-svg lt-spark-coral" viewBox="0 0 88 38" aria-hidden="true">
-                    <path d="M4 12 C22 14, 34 26, 52 24 C66 22, 74 30, 84 28" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                  </svg>
-                  <div className="lt-spark-metrics">
-                    <strong className="lt-tabular-nums" data-testid="kpi-rejected">{metrics.rejected}</strong>
-                    <span className="lt-spark-caption">incidencias</span>
-                    <span className="lt-spark-pill lt-pill-warn" data-testid="kpi-total">de {metrics.total} totales</span>
-                  </div>
-                </div>
-              </GlassyReveal>
-            </GlassyStagger>
-
-            {/* 3. Fila Analítica Compacta: Donut de Eficiencia + Progreso por Sectores de Cinta */}
-            <GlassyStagger className="lt-analytics-row" replayKey={revealKey}>
-              <GlassyReveal className="lt-surface-card lt-donut-card" hoverLift>
+            {/* Fila analítica compacta: Donut + Cinta de Tareas por Sector */}
+            <div className="lt-analytics-row">
+              <section className="lt-surface-card lt-donut-card">
                 <div className="lt-card-mini-head">
-                  <h2>ESTADO DE CLASIFICACIÓN</h2>
-                  <span className="lt-mini-chip">Hoy</span>
+                  <h2>Estado general de clasificación</h2>
+                  <span className="lt-mini-chip">Turno actual</span>
                 </div>
                 <div className="lt-donut-body">
                   <div className="lt-donut-ring-box">
@@ -385,29 +328,29 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                     </svg>
                     <div className="lt-donut-center lt-tabular-nums">
                       <strong>{metrics.inspectionRatePercent}%</strong>
-                      <span>GESTIONADO</span>
+                      <span>Gestionado</span>
                     </div>
                   </div>
                   <div className="lt-donut-legend lt-tabular-nums">
                     <div>
                       <strong>{metrics.criticalCount}</strong>
-                      <span>Prioridad Crítica</span>
+                      <span>Envíos de prioridad crítica</span>
                     </div>
                     <div>
                       <strong>{packages.filter((p) => p.priority === 'STANDARD').length}</strong>
-                      <span>Prioridad Estándar</span>
+                      <span>Envíos de prioridad estándar</span>
                     </div>
                     <div>
                       <strong>{packages.filter((p) => p.priority === 'LOW').length}</strong>
-                      <span>Prioridad Baja</span>
+                      <span>Envíos de prioridad baja</span>
                     </div>
                   </div>
                 </div>
-              </GlassyReveal>
+              </section>
 
-              <GlassyReveal className="lt-surface-card lt-sectors-card" hoverLift>
+              <section className="lt-surface-card lt-sectors-card">
                 <div className="lt-card-mini-head">
-                  <h2>CINTA DE TAREAS POR SECTOR</h2>
+                  <h2>Distribución de tareas por sector de cinta</h2>
                   <button
                     type="button"
                     className="lt-text-action-btn"
@@ -421,7 +364,9 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                     <div key={sec.label} className="lt-sector-row">
                       <div className="lt-sector-meta">
                         <span>{sec.label}</span>
-                        <strong className="lt-tabular-nums">{sec.count} u. ({sec.pct}%)</strong>
+                        <strong className="lt-tabular-nums">
+                          {sec.count} u. ({sec.pct}%)
+                        </strong>
                       </div>
                       <div className="lt-bar-track" aria-hidden="true">
                         <div
@@ -432,16 +377,17 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                     </div>
                   ))}
                 </div>
-              </GlassyReveal>
-            </GlassyStagger>
+              </section>
+            </div>
 
-            {/* 4. Listado Paginado de Envíos en Cinta (3 por página · cero scroll infinito) */}
+            {/* Listado paginado de envíos en cinta (3 por página, filas planas con divisores finos) */}
             <section className="lt-surface-card lt-paginated-section" aria-label="Listado paginado de envíos en cinta">
               <div className="lt-paginated-header">
                 <div>
-                  <h2 className="lt-paginated-title">Cinta de Envíos e Inspección</h2>
+                  <h2 className="lt-paginated-title">Listado de envíos en cinta e inspección</h2>
                   <p className="lt-paginated-sub lt-tabular-nums" role="status" aria-live="polite">
-                    Mostrando {paginatedPackages.length} de {filteredPackages.length} envíos · Página {currentPage} de {totalPages}
+                    Mostrando {paginatedPackages.length} de {filteredPackages.length} envíos en página{' '}
+                    {currentPage} de {totalPages}
                   </p>
                 </div>
 
@@ -468,40 +414,19 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
               ) : paginatedPackages.length > 0 ? (
                 <>
                   <IonList className="lt-ion-list" data-testid="packages-ion-list">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={`page-${currentPage}-${statusFilter}-${priorityFilter}-${revealKey}`}
-                        className="lt-ion-list-page-group"
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.16, ease: 'easeOut' }}
-                      >
-                        {paginatedPackages.map((pkg, idx) => (
-                          <motion.div
-                            key={pkg.id}
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{
-                              type: 'spring',
-                              stiffness: 280,
-                              damping: 26,
-                              delay: idx * 0.04
-                            }}
-                          >
-                            <PackageInspectionCard
-                              pkg={pkg}
-                              onStatusChange={handleStatusChange}
-                              onDeletePackage={handleDeletePackage}
-                              disabled={isMutating}
-                            />
-                          </motion.div>
-                        ))}
-                      </motion.div>
-                    </AnimatePresence>
+                    <div className="lt-ion-list-page-group">
+                      {paginatedPackages.map((pkg) => (
+                        <PackageInspectionCard
+                          key={pkg.id}
+                          pkg={pkg}
+                          onStatusChange={handleStatusChange}
+                          onDeletePackage={handleDeletePackage}
+                          disabled={isMutating}
+                        />
+                      ))}
+                    </div>
                   </IonList>
 
-                  {/* Barra de paginación clara por páginas */}
                   <nav className="lt-pagination-bar" aria-label="Paginación de envíos">
                     <button
                       type="button"
@@ -510,8 +435,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                       disabled={currentPage <= 1}
                       data-testid="btn-page-prev"
                     >
-                      <IonIcon icon={chevronBackOutline} aria-hidden="true" />
-                      <span>Anterior</span>
+                      Anterior
                     </button>
 
                     <div className="lt-page-numbers">
@@ -536,8 +460,7 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                       disabled={currentPage >= totalPages}
                       data-testid="btn-page-next"
                     >
-                      <span>Siguiente</span>
-                      <IonIcon icon={chevronForwardOutline} aria-hidden="true" />
+                      Siguiente
                     </button>
                   </nav>
                 </>
@@ -546,8 +469,8 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
                   <IonIcon icon={cubeOutline} aria-hidden="true" className="lt-empty-icon" />
                   <h3>No se encontraron envíos con estos filtros</h3>
                   <p>
-                    Búsqueda: <strong>{debouncedQuery || 'ninguna'}</strong> · Prioridad:{' '}
-                    <strong>{priorityFilter}</strong>
+                    Búsqueda actual: <strong>{debouncedQuery || 'sin texto'}</strong> con filtro de
+                    prioridad <strong>{priorityFilter}</strong>
                   </p>
                   <button
                     type="button"
@@ -562,99 +485,94 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
             </section>
           </div>
 
-          {/* COLUMNA DERECHA: Perfil del Operario + Calendario y Cinta de Tareas Rápidas */}
-          <aside className="lt-bento-right-col" aria-label="Perfil operativo y tareas inmediatas">
-            {/* Tarjeta MI PERFIL */}
-            <GlassyReveal indexDelay={0.08}>
-              <section className="lt-surface-card lt-profile-card">
-                <div className="lt-profile-cobalt-bar">
-                  <span>MI PERFIL OPERATIVO</span>
-                  <span className="lt-profile-status-dot">En turno</span>
-                </div>
-                <div className="lt-profile-body">
-                  <div className="lt-profile-identity">
-                    <div className="lt-avatar-circle" aria-hidden="true">{initials}</div>
-                    <div>
-                      <h2>{operator?.fullName ?? 'Luis Lázaro Pimentel'}</h2>
-                      <p className="lt-profile-role">{operator?.role ?? 'Inspector Jefe de Operaciones'}</p>
-                      <p className="lt-profile-hub">{operator?.assignedHub ?? 'MAD-HUB-01 · Cinta C1'}</p>
-                    </div>
-                  </div>
-                  <div className="lt-profile-stats lt-tabular-nums">
-                    <div>
-                      <span>Placa</span>
-                      <strong>{operator?.badgeId ?? 'OP-MAD-0488'}</strong>
-                    </div>
-                    <div>
-                      <span>Envíos</span>
-                      <strong>{metrics.total}</strong>
-                    </div>
-                    <div>
-                      <span>Masa</span>
-                      <strong>{metrics.totalWeightKg.toFixed(1)} kg</strong>
-                    </div>
+          {/* Columna derecha: Perfil operativo + Calendario y pendientes en cinta */}
+          <aside className="lt-bento-right-col" aria-label="Perfil operativo y tareas pendientes en cinta">
+            <section className="lt-surface-card lt-profile-card">
+              <div className="lt-profile-cobalt-bar">
+                <span>Perfil del operario conectado</span>
+                <span>Activo</span>
+              </div>
+              <div className="lt-profile-body">
+                <div className="lt-profile-identity">
+                  <div className="lt-avatar-circle" aria-hidden="true">{initials}</div>
+                  <div>
+                    <h2>{operator?.fullName ?? 'Luis Lázaro Pimentel'}</h2>
+                    <p className="lt-profile-role">
+                      {operator?.role ?? 'Inspector jefe de operaciones'}
+                    </p>
+                    <p className="lt-profile-hub">{cleanAssignedHub}</p>
                   </div>
                 </div>
-              </section>
-            </GlassyReveal>
-
-            {/* Tarjeta AGENDA DE TURNO Y CINTA DE TAREAS */}
-            <GlassyReveal indexDelay={0.14}>
-              <section className="lt-surface-card lt-calendar-card">
-                <div className="lt-profile-cobalt-bar">
-                  <span>TURNO Y CINTA DE TAREAS</span>
-                  <span>Noviembre</span>
+                <div className="lt-profile-stats lt-tabular-nums">
+                  <div>
+                    <span>Placa</span>
+                    <strong>{operator?.badgeId ?? 'OP-MAD-0488'}</strong>
+                  </div>
+                  <div>
+                    <span>Envíos</span>
+                    <strong>{metrics.total}</strong>
+                  </div>
+                  <div>
+                    <span>Masa total</span>
+                    <strong>{metrics.totalWeightKg.toFixed(1)} kg</strong>
+                  </div>
                 </div>
-                <div className="lt-calendar-body">
-                  <div className="lt-week-strip" aria-label="Calendario semanal de turnos">
-                    {WEEK_DAYS.map((d) => (
-                      <div key={d.num} className={`lt-week-cell ${d.active ? 'is-today' : ''}`}>
-                        <span>{d.day}</span>
-                        <strong className="lt-tabular-nums">{d.num}</strong>
-                      </div>
-                    ))}
-                  </div>
+              </div>
+            </section>
 
-                  <div className="lt-tasks-feed-head">
-                    <h3>PENDIENTES EN CINTA</h3>
-                    <span className="lt-tabular-nums">{pendingBeltTasks.length} en cola</span>
-                  </div>
+            <section className="lt-surface-card lt-calendar-card">
+              <div className="lt-profile-cobalt-bar">
+                <span>Calendario y cinta de tareas</span>
+                <span>Noviembre</span>
+              </div>
+              <div className="lt-calendar-body">
+                <div className="lt-week-strip" aria-label="Calendario semanal de turnos">
+                  {WEEK_DAYS.map((d) => (
+                    <div key={d.num} className={`lt-week-cell ${d.active ? 'is-today' : ''}`}>
+                      <span>{d.day}</span>
+                      <strong className="lt-tabular-nums">{d.num}</strong>
+                    </div>
+                  ))}
+                </div>
 
-                  <ul className="lt-quick-tasks-list">
-                    {pendingBeltTasks.length > 0 ? (
-                      pendingBeltTasks.map((task) => (
-                        <li key={task.id} className="lt-quick-task-item">
-                          <span className={`lt-task-dot lt-dot-${task.priority.toLowerCase()}`} aria-hidden="true" />
-                          <div className="lt-quick-task-info">
-                            <strong className="lt-tabular-nums">{task.trackingCode}</strong>
-                            <span>{task.destinationHub}</span>
-                          </div>
-                          <button
-                            type="button"
-                            className="lt-quick-approve-btn"
-                            disabled={isMutating}
-                            onClick={() => void handleStatusChange({ id: task.id, newStatus: 'INSPECTED' })}
-                            aria-label={`Aprobar rápido ${task.trackingCode}`}
-                            title={`Aprobar ${task.trackingCode}`}
-                          >
-                            <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" />
-                          </button>
-                        </li>
-                      ))
-                    ) : (
-                      <li className="lt-quick-task-done">
-                        Todos los envíos de la cinta están verificados.
+                <div className="lt-tasks-feed-head">
+                  <h3>Envíos pendientes en cinta</h3>
+                  <span className="lt-tabular-nums">{pendingBeltTasks.length} en cola</span>
+                </div>
+
+                <ul className="lt-quick-tasks-list">
+                  {pendingBeltTasks.length > 0 ? (
+                    pendingBeltTasks.map((task) => (
+                      <li key={task.id} className="lt-quick-task-item">
+                        <div className="lt-quick-task-info">
+                          <strong>{task.trackingCode}</strong>
+                          <span>{task.destinationHub}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="lt-quick-approve-btn"
+                          disabled={isMutating}
+                          onClick={() => void handleStatusChange({ id: task.id, newStatus: 'INSPECTED' })}
+                          aria-label={`Aprobar rápidamente envío ${task.trackingCode}`}
+                          title={`Aprobar ${task.trackingCode}`}
+                        >
+                          <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" />
+                        </button>
                       </li>
-                    )}
-                  </ul>
+                    ))
+                  ) : (
+                    <li className="lt-quick-task-done">
+                      Todos los envíos del turno han sido clasificados.
+                    </li>
+                  )}
+                </ul>
 
-                  <Link to="/telemetry" className="lt-btn-secondary-surface lt-btn-full">
-                    <IonIcon icon={layersOutline} aria-hidden="true" />
-                    <span>Ver simulación 3D completa</span>
-                  </Link>
-                </div>
-              </section>
-            </GlassyReveal>
+                <Link to="/telemetry" className="lt-btn-secondary-surface lt-btn-sm lt-btn-full">
+                  <IonIcon icon={layersOutline} aria-hidden="true" />
+                  <span>Abrir simulación 3D completa</span>
+                </Link>
+              </div>
+            </section>
           </aside>
         </div>
       </main>

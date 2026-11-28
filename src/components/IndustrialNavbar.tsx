@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { IonIcon } from '@ionic/react';
 import {
   cloudDoneOutline,
-  cubeOutline,
   gridOutline,
   homeOutline,
   layersOutline,
@@ -11,16 +10,13 @@ import {
   shieldCheckmarkOutline
 } from 'ionicons/icons';
 import { WarehouseOperator } from '../models/operator.model';
+import { BrandMark } from './BrandMark';
 
 export interface IndustrialNavbarProps {
   readonly operator: WarehouseOperator | null;
   readonly onLogout: () => void;
 }
 
-/**
- * Barra Lateral Vertical Cobalto (estilo panel operativo moderno compacto)
- * Permite navegar entre secciones por páginas sin necesidad de largos desplazamientos.
- */
 export const IndustrialNavbar: React.FC<IndustrialNavbarProps> = ({ operator, onLogout }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -46,7 +42,7 @@ export const IndustrialNavbar: React.FC<IndustrialNavbarProps> = ({ operator, on
     <aside className="lt-sidebar-rail" aria-label="Navegación principal de LogiTrack">
       <Link to="/" className="lt-sidebar-brand" aria-label="LogiTrack Express Inicio" title="LogiTrack Express">
         <span className="lt-sidebar-logo-icon" aria-hidden="true">
-          <IonIcon icon={cubeOutline} />
+          <BrandMark size={38} />
         </span>
         <span className="lt-sidebar-logo-short">
           <span>Logi</span>

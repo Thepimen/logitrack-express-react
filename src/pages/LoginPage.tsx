@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { IonIcon } from '@ionic/react';
 import {
-  arrowForwardOutline,
-  cubeOutline,
   keyOutline,
   lockClosedOutline,
   personOutline,
@@ -13,17 +10,12 @@ import {
 import { WarehouseOperator } from '../models/operator.model';
 import { authService } from '../services/auth.service';
 import { ThemeToggleButton } from '../context/ThemeContext';
+import { BrandMark } from '../components/BrandMark';
 
 export interface LoginPageProps {
   readonly onLoginSuccess: (operator: WarehouseOperator) => void;
 }
 
-/**
- * Página dedicada de Inicio de Sesión (`/login`)
- * - Armonía visual 100% coherente con la Landing Page (misma cabecera limpia,
- *   formas geométricas azules suaves y tarjeta central elevada).
- * - Responde íntegramente al tema global Claro / Oscuro elegido por el usuario.
- */
 export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
 
@@ -81,10 +73,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       <header className="lt-public-header">
         <div className="lt-public-header-inner">
           <Link to="/" className="lt-public-brand" aria-label="Volver al inicio de LogiTrack Express">
-            <span className="lt-public-logo-mark" aria-hidden="true">
-              <IonIcon icon={cubeOutline} />
-            </span>
-            <span className="lt-public-logo-text">LogiTrack</span>
+            <BrandMark size={34} />
+            <span className="lt-public-logo-text">LogiTrack Express</span>
           </Link>
 
           <div className="lt-public-auth-actions">
@@ -101,36 +91,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
       <main className="lt-auth-centered-main" aria-labelledby="login-page-heading">
         <div className="lt-geo-field" aria-hidden="true">
-          <motion.span
-            className="lt-geo-shape lt-geo-square-left"
-            animate={{ y: [0, -12, 0], rotate: [16, 22, 16] }}
-            transition={{ duration: 7.4, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.span
-            className="lt-geo-shape lt-geo-circle-right"
-            animate={{ y: [0, 12, 0], scale: [1, 1.06, 1] }}
-            transition={{ duration: 6.8, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.span
-            className="lt-geo-shape lt-geo-arc-left"
-            animate={{ rotate: [18, 6, 18] }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          />
+          <span className="lt-geo-shape lt-geo-square-left" />
+          <span className="lt-geo-shape lt-geo-circle-right" />
+          <span className="lt-geo-shape lt-geo-arc-left" />
         </div>
 
-        <motion.div
-          className="lt-auth-card-shell"
-          initial={{ opacity: 0, y: 24, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 230, damping: 24 }}
-        >
+        <div className="lt-auth-card-shell">
           <div className="lt-auth-card-head">
-            <span className="lt-kicker-accent">ACCESO DE OPERARIOS</span>
             <h1 id="login-page-heading" className="lt-auth-page-title">
-              Iniciar sesión en LogiTrack
+              Iniciar sesión en LogiTrack Express
             </h1>
             <p className="lt-auth-page-sub">
-              Accede a tu turno activo para consultar envíos, inspeccionar la cinta y gestionar incidencias.
+              Accede a tu turno activo para consultar envíos, inspeccionar la cinta y gestionar
+              incidencias.
             </p>
           </div>
 
@@ -149,7 +122,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           <form onSubmit={(e) => void handleOperatorSubmit(e)} noValidate className="lt-auth-form">
             <div className="lt-field-group">
               <label htmlFor="operator-badge-input">
-                <IonIcon icon={personOutline} aria-hidden="true" /> Placa de operario o correo electrónico
+                <IonIcon icon={personOutline} aria-hidden="true" /> Placa de operario o correo
+                electrónico
               </label>
               <input
                 id="operator-badge-input"
@@ -202,12 +176,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               data-testid="btn-login-submit"
             >
               <IonIcon icon={shieldCheckmarkOutline} aria-hidden="true" />
-              <span>{isAuthenticating ? 'Verificando acceso...' : 'Entrar al Panel Operativo'}</span>
-              <IonIcon icon={arrowForwardOutline} aria-hidden="true" />
+              <span>{isAuthenticating ? 'Verificando acceso...' : 'Entrar al panel operativo'}</span>
             </button>
           </form>
 
-          {/* Acceso rápido para pruebas y evaluación */}
           <div className="lt-preset-operators" aria-label="Perfiles de acceso rápido disponibles">
             <span className="lt-preset-label">Perfiles de acceso rápido de demostración:</span>
             <div className="lt-preset-grid">
@@ -216,8 +188,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 className={`lt-preset-btn ${identifier.toUpperCase() === 'OP-MAD-0488' ? 'active' : ''}`}
                 onClick={() => applyPresetOperator('OP-MAD-0488', 'LT-2026-DAM')}
               >
-                <strong>OP-MAD-0488 · Luis Lázaro Pimentel</strong>
-                <span>Inspector Jefe · Centro Madrid (MAD-HUB-01)</span>
+                <strong>OP-MAD-0488 - Luis Lázaro Pimentel</strong>
+                <span>Inspector jefe en Centro Madrid (MAD-HUB-01)</span>
               </button>
 
               <button
@@ -225,8 +197,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 className={`lt-preset-btn ${identifier.toUpperCase() === 'OP-BCN-0219' ? 'active' : ''}`}
                 onClick={() => applyPresetOperator('OP-BCN-0219', 'LT-2026-BCN')}
               >
-                <strong>OP-BCN-0219 · Elena Vance</strong>
-                <span>Operadora Senior · Centro Barcelona (BCN-ZAL)</span>
+                <strong>OP-BCN-0219 - Elena Vance</strong>
+                <span>Operadora sénior en Centro Barcelona (BCN-ZAL)</span>
               </button>
             </div>
           </div>
@@ -237,7 +209,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               Crear una cuenta nueva
             </Link>
           </div>
-        </motion.div>
+        </div>
       </main>
     </div>
   );

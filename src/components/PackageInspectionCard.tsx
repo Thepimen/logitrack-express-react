@@ -100,7 +100,7 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
           <div className="lt-card-header">
             <div className="lt-tracking-cluster">
               <span className="lt-bay-tag" title="Sector de línea">
-                {pkg.aisleBay}
+                {pkg.aisleBay.replace(/\s*[·•]\s*/g, ' / ')}
               </span>
               <h3 className="lt-tracking-code">
                 <IonIcon icon={cubeOutline} aria-hidden="true" className="lt-inline-icon" />
@@ -149,7 +149,7 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
                 <IonIcon icon={timeOutline} aria-hidden="true" /> Registro
               </span>
               <strong className="lt-metric-value lt-tabular-nums">
-                {formattedDate} · {formattedTime}
+                {formattedDate}, {formattedTime}
               </strong>
             </div>
           </div>

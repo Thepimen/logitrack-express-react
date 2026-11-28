@@ -16,19 +16,12 @@ import {
   AwsEmulatorSnapshot,
   awsEmulatorService
 } from '../services/aws-emulator.service';
-import { GlassyReveal, GlassyStagger } from '../components/GlassyReveal';
 
 export interface CloudInfraPageProps {
   readonly warehouseState: UseWarehousePackagesReturn;
   readonly operatorBadge: string;
 }
 
-/**
- * Centro de Sincronización, Respaldo y Trazabilidad (`/cloud-infra`)
- * - Internamente opera la persistencia dual real (Base de Datos Principal +
- *   Réplica NoSQL + Archivo de Manifiestos S3 + Cola de Eventos SQS).
- * - Lenguaje 100% comprensible y orientativo para el cliente logístico.
- */
 export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
   warehouseState,
   operatorBadge
@@ -36,10 +29,9 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
   const { packages, metrics } = warehouseState;
   const [snapshot, setSnapshot] = useState<AwsEmulatorSnapshot | null>(null);
   const [statusLog, setStatusLog] = useState<string>(
-    'Sincronización activa: los registros principales, réplicas y manifiestos de turno están actualizados.'
+    'Sincronización activa: los registros principales, las copias rápidas y los manifiestos de turno están actualizados.'
   );
   const [isWorking, setIsWorking] = useState<boolean>(false);
-  const [replayKey, setReplayKey] = useState<number>(0);
 
   const refreshEmulator = useCallback(async (): Promise<void> => {
     const snap = await awsEmulatorService.getSnapshot(packages);
@@ -56,7 +48,7 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
       const res = await awsEmulatorService.syncPackagesToDynamoDb(packages);
       await refreshEmulator();
       setStatusLog(
-        `Sincronización completada: ${res.syncedCount} envíos replicados correctamente en el espejo de alta velocidad.`
+        `Sincronización completada: ${res.syncedCount} envíos replicados correctamente en la copia de consulta rápida.`
       );
     } finally {
       setIsWorking(false);
@@ -69,7 +61,7 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
       const obj = await awsEmulatorService.archiveManifestToS3(packages, operatorBadge);
       await refreshEmulator();
       setStatusLog(
-        `Manifiesto de turno guardado correctamente (${obj.key} · ${obj.sizeBytes} bytes · Firma verificada).`
+        `Manifiesto de turno guardado correctamente (${obj.key}, ${obj.sizeBytes} bytes, firma verificada).`
       );
     } finally {
       setIsWorking(false);
@@ -88,7 +80,7 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
       });
       await refreshEmulator();
       setStatusLog(
-        `Notificación registrada en el historial de eventos (ID ${msg.messageId.slice(0, 8)}…).`
+        `Notificación registrada en el historial de eventos con identificador ${msg.messageId.slice(0, 8)}.`
       );
     } finally {
       setIsWorking(false);
@@ -99,23 +91,26 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
     <div className="lt-dash-wrapper">
       <header className="lt-subpage-topbar">
         <div>
-          <span className="lt-kicker-accent">CONTINUIDAD OPERATIVA Y RESPALDO</span>
           <h1 id="cloud-infra-heading" className="lt-subpage-title">
-            Centro de Sincronización, Copias y Trazabilidad
+            Centro de sincronización, copias de seguridad y trazabilidad
           </h1>
+          <p className="lt-subpage-desc">
+            Supervisa la réplica de envíos, guarda cierres firmados de turno y revisa el historial
+            cronológico de actividad.
+          </p>
         </div>
         <div className="lt-subpage-topbar-actions">
           <span className="lt-status-live-chip" role="status" data-testid="aws-mode-pill">
             {snapshot?.mode === 'LOCALSTACK_LIVE_4566'
-              ? 'Servicio Local Conectado'
-              : 'Sincronización en la Nube Activa'}
+              ? 'Servicio local conectado'
+              : 'Sincronización en la nube activa'}
           </span>
           <button
             type="button"
             className="lt-icon-pill-btn"
-            onClick={() => setReplayKey((k) => k + 1)}
-            aria-label="Actualizar tarjetas de estado"
-            title="Actualizar vista"
+            onClick={() => void refreshEmulator()}
+            aria-label="Actualizar indicadores de respaldo"
+            title="Actualizar estado"
           >
             <IonIcon icon={refreshOutline} aria-hidden="true" />
           </button>
@@ -131,49 +126,47 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
           </div>
         </div>
 
-        {/* 4 indicadores compactos de respaldo */}
-        <GlassyStagger className="lt-kpi-ribbon-4" replayKey={replayKey}>
-          <GlassyReveal className="lt-surface-card lt-mini-kpi" hoverLift>
-            <span className="lt-kpi-label">REGISTRO PRINCIPAL</span>
+        {/* Tira abierta de 4 contadores reales sin cajas repetitivas */}
+        <section className="lt-open-metrics-strip" aria-label="Resumen de copias y eventos">
+          <div className="lt-open-metric-cell">
+            <span className="lt-kpi-label">Envíos en registro principal</span>
             <strong className="lt-kpi-number lt-tabular-nums">{metrics.total}</strong>
-            <span className="lt-kpi-foot">Envíos consolidados en línea</span>
-          </GlassyReveal>
+            <span className="lt-kpi-foot">Consolidados en la base de datos activa</span>
+          </div>
 
-          <GlassyReveal className="lt-surface-card lt-mini-kpi" hoverLift>
-            <span className="lt-kpi-label">RÉPLICA DE CONSULTA RÁPIDA</span>
+          <div className="lt-open-metric-cell">
+            <span className="lt-kpi-label">Envíos en copia de consulta rápida</span>
             <strong className="lt-kpi-number lt-tabular-nums" data-testid="aws-dynamo-count">
               {snapshot?.dynamoItems.length ?? 0}
             </strong>
-            <span className="lt-kpi-foot">Copia sincronizada en baja latencia</span>
-          </GlassyReveal>
+            <span className="lt-kpi-foot">Registros replicados para lectura ágil</span>
+          </div>
 
-          <GlassyReveal className="lt-surface-card lt-mini-kpi" hoverLift>
-            <span className="lt-kpi-label">MANIFIESTOS ARCHIVADOS</span>
+          <div className="lt-open-metric-cell">
+            <span className="lt-kpi-label">Manifiestos de cierre archivados</span>
             <strong className="lt-kpi-number lt-tabular-nums" data-testid="aws-s3-count">
               {snapshot?.s3Objects.length ?? 0}
             </strong>
-            <span className="lt-kpi-foot">Instantáneas firmadas de turno</span>
-          </GlassyReveal>
+            <span className="lt-kpi-foot">Documentos firmados almacenados en turno</span>
+          </div>
 
-          <GlassyReveal className="lt-surface-card lt-mini-kpi" hoverLift>
-            <span className="lt-kpi-label">EVENTOS REGISTRADOS</span>
+          <div className="lt-open-metric-cell">
+            <span className="lt-kpi-label">Movimientos en historial de eventos</span>
             <strong className="lt-kpi-number lt-tabular-nums" data-testid="aws-sqs-count">
               {snapshot?.sqsMessages.length ?? 0}
             </strong>
-            <span className="lt-kpi-foot">Historial de movimientos de planta</span>
-          </GlassyReveal>
-        </GlassyStagger>
+            <span className="lt-kpi-foot">Notificaciones registradas en la sesión</span>
+          </div>
+        </section>
 
-        {/* 3 tarjetas operativas interactivas */}
-        <GlassyStagger className="lt-aws-grid" replayKey={replayKey}>
-          <GlassyReveal className="lt-surface-card lt-audit-card" hoverLift>
+        {/* Tres paneles operativos funcionales */}
+        <div className="lt-aws-grid">
+          <section className="lt-surface-card lt-audit-card">
             <div className="lt-aws-card-head">
-              <div>
-                <span className="lt-kicker-accent">RESPALDO ACTIVO</span>
-                <h2>
-                  <IonIcon icon={serverOutline} aria-hidden="true" /> Réplica de Envíos
-                </h2>
-              </div>
+              <h2>
+                <IonIcon icon={serverOutline} aria-hidden="true" /> Copia rápida de envíos
+                sincronizados
+              </h2>
               <button
                 type="button"
                 className="lt-btn-primary-solid lt-btn-xs"
@@ -185,8 +178,8 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
               </button>
             </div>
             <p className="lt-muted-desc">
-              Mantiene una copia estructurada de cada envío para consultas ultrarrápidas desde
-              terminales de almacén incluso en horas punta.
+              Mantiene una réplica estructurada de cada envío para responder con agilidad desde los
+              terminales del almacén durante picos de recepción.
             </p>
             <pre className="lt-code-pre lt-code-compact">
               {JSON.stringify(
@@ -199,16 +192,14 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
                 2
               )}
             </pre>
-          </GlassyReveal>
+          </section>
 
-          <GlassyReveal className="lt-surface-card lt-audit-card" hoverLift>
+          <section className="lt-surface-card lt-audit-card">
             <div className="lt-aws-card-head">
-              <div>
-                <span className="lt-kicker-accent">DOCUMENTACIÓN DE TURNO</span>
-                <h2>
-                  <IonIcon icon={cloudUploadOutline} aria-hidden="true" /> Archivo de Manifiestos
-                </h2>
-              </div>
+              <h2>
+                <IonIcon icon={cloudUploadOutline} aria-hidden="true" /> Archivo de manifiestos de
+                cierre de turno
+              </h2>
               <button
                 type="button"
                 className="lt-btn-primary-solid lt-btn-xs"
@@ -220,8 +211,8 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
               </button>
             </div>
             <p className="lt-muted-desc">
-              Genera una copia sellada con el resumen de envíos aprobados, en cinta y en cuarentena
-              para auditorías de transporte.
+              Genera un resumen sellado con los envíos aprobados, pendientes en cinta y derivados a
+              cuarentena para auditorías de transporte.
             </p>
             {snapshot && snapshot.s3Objects.length > 0 ? (
               <ul className="lt-aws-list">
@@ -229,26 +220,24 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
                   <li key={obj.key} className="lt-aws-list-item">
                     <strong>{obj.key}</strong>
                     <span className="lt-tabular-nums">
-                      {obj.sizeBytes} bytes · Firma {obj.etag.slice(0, 14)}…
+                      {obj.sizeBytes} bytes, firma {obj.etag.slice(0, 14)}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
               <div className="lt-aws-empty-note">
-                Pulsa <strong>Guardar cierre</strong> para archivar un manifiesto de turno ahora.
+                Pulsa <strong>Guardar cierre</strong> para archivar un manifiesto del turno actual.
               </div>
             )}
-          </GlassyReveal>
+          </section>
 
-          <GlassyReveal className="lt-surface-card lt-audit-card" hoverLift>
+          <section className="lt-surface-card lt-audit-card">
             <div className="lt-aws-card-head">
-              <div>
-                <span className="lt-kicker-accent">TRAZABILIDAD EN VIVO</span>
-                <h2>
-                  <IonIcon icon={layersOutline} aria-hidden="true" /> Cola de Eventos
-                </h2>
-              </div>
+              <h2>
+                <IonIcon icon={layersOutline} aria-hidden="true" /> Historial cronológico de
+                eventos en planta
+              </h2>
               <button
                 type="button"
                 className="lt-btn-primary-solid lt-btn-xs"
@@ -260,63 +249,59 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
               </button>
             </div>
             <p className="lt-muted-desc">
-              Cada alta, aprobación o desvío a cuarentena queda registrado automáticamente en la
-              secuencia cronológica del turno.
+              Cada alta, aprobación, baja o desvío a cuarentena queda reflejado automáticamente en
+              el orden en que se produce.
             </p>
             <ul className="lt-aws-list">
               {(snapshot?.sqsMessages ?? []).slice(0, 4).map((msg) => (
                 <li key={msg.messageId} className="lt-aws-list-item">
                   <strong>
-                    {msg.trackingCode} · {msg.eventType}
+                    {msg.trackingCode} ({msg.eventType})
                   </strong>
                   <span>{msg.detail}</span>
                 </li>
               ))}
             </ul>
-          </GlassyReveal>
-        </GlassyStagger>
+          </section>
+        </div>
 
-        {/* Estado de control de calidad y despliegue continuo */}
-        <GlassyReveal className="lt-surface-card lt-audit-card">
-          <span className="lt-kicker-accent">GARANTÍA DE SERVICIO CONTINUO</span>
-          <h2>
-            <IonIcon icon={shieldCheckmarkOutline} aria-hidden="true" /> Flujo Automatizado de Validación y Publicación
+        {/* Sección abierta sin tarjetas anidadas ni numeración PASO 01..04 */}
+        <section className="lt-open-info-band" aria-labelledby="service-validation-heading">
+          <h2 id="service-validation-heading" className="lt-open-band-title">
+            <IonIcon icon={shieldCheckmarkOutline} aria-hidden="true" /> Validación automática y
+            publicación continua del servicio
           </h2>
-          <div className="lt-cicd-pipeline-grid">
-            <div className="lt-cicd-stage">
-              <span className="lt-stage-num">PASO 01</span>
-              <h3>Control de Cambios</h3>
-              <p>Registro seguro de actualizaciones con protección automática de credenciales.</p>
-              <span className="lt-stage-pass">
-                <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> Operativo
-              </span>
+          <div className="lt-editorial-columns-4">
+            <div className="lt-editorial-col-item">
+              <h3>Control de versiones y credenciales</h3>
+              <p>
+                Cada actualización se registra de forma trazable evitando la exposición de claves de
+                acceso en el código fuente.
+              </p>
             </div>
-            <div className="lt-cicd-stage">
-              <span className="lt-stage-num">PASO 02</span>
-              <h3>Validación de Integridad</h3>
-              <p>Comprobación automática de todos los formularios y contratos de datos antes de publicar.</p>
-              <span className="lt-stage-pass">
-                <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> 0 incidencias
-              </span>
+            <div className="lt-editorial-col-item">
+              <h3>Comprobación automática de integridad</h3>
+              <p>
+                Antes de publicar una nueva versión se comprueban contratos de datos, formularios y
+                compilación estricta.
+              </p>
             </div>
-            <div className="lt-cicd-stage">
-              <span className="lt-stage-num">PASO 03</span>
-              <h3>Prueba de Respaldo</h3>
-              <p>Verificación automática del almacenamiento de réplicas, manifiestos y cola de eventos.</p>
-              <span className="lt-stage-pass">
-                <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> Superado
-              </span>
+            <div className="lt-editorial-col-item">
+              <h3>Verificación de copias y mensajería</h3>
+              <p>
+                Se ejecutan pruebas automáticas sobre la réplica de envíos, el guardado de
+                manifiestos y la cola de notificaciones.
+              </p>
             </div>
-            <div className="lt-cicd-stage">
-              <span className="lt-stage-num">PASO 04</span>
-              <h3>Publicación sin Cortes</h3>
-              <p>Actualización instantánea para todos los centros con reversión segura garantizada.</p>
-              <span className="lt-stage-pass">
-                <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> Activo 24/7
-              </span>
+            <div className="lt-editorial-col-item">
+              <h3>Despliegue atómico con reversión segura</h3>
+              <p>
+                Las mejoras llegan a todos los centros sin interrumpir el turno en curso y con
+                opción de volver a la versión previa.
+              </p>
             </div>
           </div>
-        </GlassyReveal>
+        </section>
       </main>
     </div>
   );
