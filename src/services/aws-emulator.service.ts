@@ -343,7 +343,7 @@ export class AwsEmulatorService {
       eventType: 'BATCH_SYNC',
       trackingCode: packages[0]?.trackingCode ?? 'BATCH-ALL',
       packageId: packages[0]?.id ?? generateUuidV4(),
-      detail: `Replicación Supabase PostgreSQL → AWS DynamoDB (${this.dynamoTable}): ${mappedItems.length} ítems sincronizados`
+      detail: `Sincronización completada en copia rápida de respaldo: ${mappedItems.length} envíos actualizados`
     });
 
     console.log(
@@ -510,7 +510,7 @@ export class AwsEmulatorService {
       eventType,
       trackingCode: pkg.trackingCode,
       packageId: pkg.id,
-      detail: `Mutación replicada en DynamoDB (${this.dynamoTable}): ${pkg.trackingCode} → ${pkg.status} (${pkg.destinationHub})`
+      detail: `Cambio sincronizado en copia de respaldo: ${pkg.trackingCode} → ${pkg.status} (${pkg.destinationHub})`
     });
   }
 }

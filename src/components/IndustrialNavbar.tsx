@@ -35,9 +35,9 @@ export const IndustrialNavbar: React.FC<IndustrialNavbarProps> = ({ operator, on
     readonly label: string;
     readonly icon: string;
   }> = [
-    { to: '/terminal', label: 'Panel General', icon: gridOutline },
+    { to: '/terminal', label: 'Panel', icon: gridOutline },
     { to: '/telemetry', label: 'Cinta 3D', icon: layersOutline },
-    { to: '/cloud-infra', label: 'Sincronización', icon: cloudDoneOutline },
+    { to: '/cloud-infra', label: 'Respaldo', icon: cloudDoneOutline },
     { to: '/audit-wcag', label: 'Calidad', icon: shieldCheckmarkOutline },
     { to: '/', label: 'Inicio', icon: homeOutline }
   ];
@@ -48,7 +48,10 @@ export const IndustrialNavbar: React.FC<IndustrialNavbarProps> = ({ operator, on
         <span className="lt-sidebar-logo-icon" aria-hidden="true">
           <IonIcon icon={cubeOutline} />
         </span>
-        <span className="lt-sidebar-logo-short">Logi</span>
+        <span className="lt-sidebar-logo-short">
+          <span>Logi</span>
+          <span>Track</span>
+        </span>
       </Link>
 
       {operator ? (

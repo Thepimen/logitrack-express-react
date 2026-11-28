@@ -1372,11 +1372,11 @@ ion-button:active:not([disabled]) {
 
 /* Barra lateral azul cobalto izquierda */
 .lt-sidebar-rail {
-  width: 82px;
+  width: 88px;
   flex-shrink: 0;
   background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
   border-radius: 22px;
-  padding: 16px 10px;
+  padding: 16px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1404,7 +1404,7 @@ ion-button:active:not([disabled]) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   text-decoration: none;
   color: #ffffff;
 }
@@ -1422,8 +1422,12 @@ ion-button:active:not([disabled]) {
 }
 
 .lt-sidebar-logo-short {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   font-size: 0.72rem;
   font-weight: 800;
+  line-height: 1.05;
   letter-spacing: 0.02em;
   color: #ffffff;
 }
@@ -1447,18 +1451,19 @@ ion-button:active:not([disabled]) {
 
 .lt-sidebar-item,
 .lt-sidebar-logout {
-  width: 54px;
-  min-height: 48px;
+  width: 68px;
+  min-height: 52px;
+  padding: 6px 4px;
   border-radius: 14px;
   border: none;
   background: transparent;
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   font-size: 1.25rem;
   cursor: pointer;
 }
@@ -1476,10 +1481,11 @@ ion-button:active:not([disabled]) {
 }
 
 .lt-sidebar-label {
-  font-size: 0.56rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.05;
   text-align: center;
+  white-space: nowrap;
 }
 
 .lt-dashboard-stage {
@@ -2204,7 +2210,8 @@ ion-button:active:not([disabled]) {
   color: #ffffff;
 }
 
-.lt-ion-list {
+.lt-ion-list,
+.lt-ion-list-page-group {
   background: transparent !important;
   padding: 0 !important;
   display: flex;

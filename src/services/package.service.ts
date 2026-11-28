@@ -313,7 +313,7 @@ export class PackageService {
       eventType: 'PACKAGE_DELETED',
       trackingCode: target?.trackingCode ?? 'UNKNOWN',
       packageId: id,
-      detail: `Paquete ${target?.trackingCode ?? id} retirado de Supabase PostgreSQL y notificado a SQS`
+      detail: `Envío ${target?.trackingCode ?? id} retirado del registro activo y notificado al historial`
     });
   }
 

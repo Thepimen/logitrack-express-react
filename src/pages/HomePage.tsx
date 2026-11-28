@@ -468,29 +468,36 @@ export const HomePage: React.FC<HomePageProps> = ({ warehouseState, operator }) 
               ) : paginatedPackages.length > 0 ? (
                 <>
                   <IonList className="lt-ion-list" data-testid="packages-ion-list">
-                    <AnimatePresence mode="popLayout">
-                      {paginatedPackages.map((pkg, idx) => (
-                        <motion.div
-                          key={`${pkg.id}-${currentPage}-${revealKey}`}
-                          layout
-                          initial={{ opacity: 0, y: 16, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -12, scale: 0.97 }}
-                          transition={{
-                            type: 'spring',
-                            stiffness: 260,
-                            damping: 24,
-                            delay: idx * 0.05
-                          }}
-                        >
-                          <PackageInspectionCard
-                            pkg={pkg}
-                            onStatusChange={handleStatusChange}
-                            onDeletePackage={handleDeletePackage}
-                            disabled={isMutating}
-                          />
-                        </motion.div>
-                      ))}
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={`page-${currentPage}-${statusFilter}-${priorityFilter}-${revealKey}`}
+                        className="lt-ion-list-page-group"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.16, ease: 'easeOut' }}
+                      >
+                        {paginatedPackages.map((pkg, idx) => (
+                          <motion.div
+                            key={pkg.id}
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                              type: 'spring',
+                              stiffness: 280,
+                              damping: 26,
+                              delay: idx * 0.04
+                            }}
+                          >
+                            <PackageInspectionCard
+                              pkg={pkg}
+                              onStatusChange={handleStatusChange}
+                              onDeletePackage={handleDeletePackage}
+                              disabled={isMutating}
+                            />
+                          </motion.div>
+                        ))}
+                      </motion.div>
                     </AnimatePresence>
                   </IonList>
 
