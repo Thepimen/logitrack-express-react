@@ -5,10 +5,12 @@ import { IonApp, setupIonicReact } from '@ionic/react';
 import { WarehouseOperator } from './models/operator.model';
 import { authService } from './services/auth.service';
 import { useWarehousePackages } from './hooks/useWarehousePackages';
+import { ThemeProvider } from './context/ThemeContext';
 import { IndustrialNavbar } from './components/IndustrialNavbar';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
 import { HomePage } from './pages/HomePage';
 import { Telemetry3DPage } from './pages/Telemetry3DPage';
 import { CloudInfraPage } from './pages/CloudInfraPage';
@@ -21,41 +23,48 @@ setupIonicReact({
 
 interface AppRoutesShellProps {
   readonly operator: WarehouseOperator | null;
-  readonly onLoginSuccess: (operator: WarehouseOperator) => void;
+  readonly onAuthSuccess: (operator: WarehouseOperator) => void;
   readonly onLogout: () => void;
 }
 
 const AppRoutesShell: React.FC<AppRoutesShellProps> = ({
   operator,
-  onLoginSuccess,
+  onAuthSuccess,
   onLogout
 }) => {
   const location = useLocation();
   const warehouseState = useWarehousePackages();
-  const isLandingRoute = location.pathname === '/';
+  const isPublicRoute =
+    location.pathname === '/' ||
+    location.pathname === '/login' ||
+    location.pathname === '/register';
 
-  return (
-    <div className={isLandingRoute ? 'lt-landing-root-wrapper' : 'lt-layout-root'}>
-      {!isLandingRoute && <IndustrialNavbar operator={operator} onLogout={onLogout} />}
-
-      <div className="lt-view-viewport">
+  if (isPublicRoute) {
+    return (
+      <div className="lt-public-shell">
         <Routes>
           <Route path="/" element={<LandingPage warehouseState={warehouseState} />} />
+          <Route path="/login" element={<LoginPage onLoginSuccess={onAuthSuccess} />} />
+          <Route path="/register" element={<RegisterPage onRegisterSuccess={onAuthSuccess} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    );
+  }
 
-          <Route
-            path="/login"
-            element={<LoginPage onLoginSuccess={onLoginSuccess} />}
-          />
-
+  return (
+    <div className="lt-app-dashboard-shell">
+      <IndustrialNavbar operator={operator} onLogout={onLogout} />
+      <div className="lt-dashboard-stage">
+        <Routes>
           <Route
             path="/terminal"
             element={
               <ProtectedRoute operator={operator}>
-                <HomePage warehouseState={warehouseState} />
+                <HomePage warehouseState={warehouseState} operator={operator} />
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/telemetry"
             element={
@@ -64,7 +73,6 @@ const AppRoutesShell: React.FC<AppRoutesShellProps> = ({
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/cloud-infra"
             element={
@@ -76,7 +84,6 @@ const AppRoutesShell: React.FC<AppRoutesShellProps> = ({
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/audit-wcag"
             element={
@@ -85,7 +92,6 @@ const AppRoutesShell: React.FC<AppRoutesShellProps> = ({
               </ProtectedRoute>
             }
           />
-
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
@@ -98,7 +104,7 @@ export const App: React.FC = () => {
     authService.getCurrentOperator()
   );
 
-  const handleLoginSuccess = (authenticatedOperator: WarehouseOperator): void => {
+  const handleAuthSuccess = (authenticatedOperator: WarehouseOperator): void => {
     setOperator(authenticatedOperator);
   };
 
@@ -108,17 +114,19 @@ export const App: React.FC = () => {
   };
 
   return (
-    <MotionConfig reducedMotion="user">
-      <IonApp className="lt-app-shell">
-        <BrowserRouter>
-          <AppRoutesShell
-            operator={operator}
-            onLoginSuccess={handleLoginSuccess}
-            onLogout={handleLogout}
-          />
-        </BrowserRouter>
-      </IonApp>
-    </MotionConfig>
+    <ThemeProvider>
+      <MotionConfig reducedMotion="user">
+        <IonApp className="lt-app-shell">
+          <BrowserRouter>
+            <AppRoutesShell
+              operator={operator}
+              onAuthSuccess={handleAuthSuccess}
+              onLogout={handleLogout}
+            />
+          </BrowserRouter>
+        </IonApp>
+      </MotionConfig>
+    </ThemeProvider>
   );
 };
 

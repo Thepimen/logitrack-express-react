@@ -26,46 +26,31 @@ import {
 } from '../models/package.model';
 
 export interface PackageInspectionCardProps {
-  /**
-   * Propiedad de entrada estrictamente tipada (Tarea 3 — equivalente en React a @Input() pkg: WarehousePackage)
-   */
   readonly pkg: WarehousePackage;
-  /**
-   * Emisor de eventos tipado hacia el contenedor padre (Tarea 3 — equivalente a @Output() statusChange)
-   */
   readonly onStatusChange: (event: PackageStatusChangeEvent) => void | Promise<void>;
-  /**
-   * Acción opcional para eliminar un paquete de Supabase PostgreSQL (RA 5 — CRUD DELETE)
-   */
   readonly onDeletePackage?: (id: string) => void | Promise<void>;
-  /**
-   * Indica si hay una mutación en curso para evitar condiciones de carrera por doble clic
-   */
   readonly disabled?: boolean;
-  /**
-   * Selecciona el paquete en el gemelo digital 3D
-   */
   readonly onSelect3D?: (pkg: WarehousePackage) => void;
   readonly isSelected3D?: boolean;
 }
 
 const STATUS_LABELS: Record<PackageStatus, string> = {
-  IN_TRANSIT: 'EN TRÁNSITO · CINTA',
-  INSPECTED: 'INSPECCIONADO · OK',
-  REJECTED: 'RECHAZADO · CUARENTENA'
+  IN_TRANSIT: 'En cinta',
+  INSPECTED: 'Aprobado',
+  REJECTED: 'Cuarentena'
 };
 
 const PRIORITY_LABELS: Record<PackagePriority, string> = {
-  CRITICAL: 'PRIORIDAD CRÍTICA',
-  STANDARD: 'ESTÁNDAR',
-  LOW: 'BAJA PRIORIDAD'
+  CRITICAL: 'Crítica',
+  STANDARD: 'Estándar',
+  LOW: 'Baja'
 };
 
 /**
- * Tarea 3: Componente Visual Reutilizable (Custom Component)
- * Encapsula la representación visual y los controles rápidos de inspección de un paquete
- * sobre la cinta transportadora utilizando componentes oficiales de Ionic Framework v8,
- * interpolación JSX, property binding dinámico y conformidad WCAG 2.1 Nivel AA/AAA.
+ * Componente Visual Reutilizable de Tarjeta de Envío (Tarea 3)
+ * - Totalmente desacoplado de la capa de servicios.
+ * - Utiliza IonItemSliding, IonItem, IonBadge e IonButton oficiales con iconos
+ *   checkmark-circle-outline y close-circle-outline para clasificar como INSPECTED o REJECTED.
  */
 export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
   pkg,
@@ -77,8 +62,7 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
 }) => {
   const formattedTime = pkg.timestamp.toLocaleTimeString('es-ES', {
     hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
+    minute: '2-digit'
   });
   const formattedDate = pkg.timestamp.toLocaleDateString('es-ES', {
     day: '2-digit',
@@ -111,20 +95,19 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
       >
         <article
           className="lt-card-surface"
-          aria-label={`Paquete ${pkg.trackingCode}, destino ${pkg.destinationHub}, estado ${STATUS_LABELS[pkg.status]}`}
+          aria-label={`Envío ${pkg.trackingCode}, destino ${pkg.destinationHub}, estado ${STATUS_LABELS[pkg.status]}`}
         >
-          {/* Cabecera técnica: Tracking Code + UUID v4 + Badges con contraste AAA */}
           <div className="lt-card-header">
             <div className="lt-tracking-cluster">
-              <span className="lt-bay-tag" title="Sector de cinta transportadora">
+              <span className="lt-bay-tag" title="Sector de línea">
                 {pkg.aisleBay}
               </span>
               <h3 className="lt-tracking-code">
                 <IonIcon icon={cubeOutline} aria-hidden="true" className="lt-inline-icon" />
                 {pkg.trackingCode}
               </h3>
-              <code className="lt-uuid-pill" title={`Identificador único UUID v4: ${pkg.id}`}>
-                UUID v4: {pkg.id}
+              <code className="lt-uuid-pill" title={`Referencia única: ${pkg.id}`}>
+                Ref: {pkg.id.slice(0, 13)}…
               </code>
             </div>
 
@@ -144,18 +127,17 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
             </div>
           </div>
 
-          {/* Cuerpo declarativo: Interpolación de Hub de destino, peso en kg y timestamp */}
           <div className="lt-card-grid">
             <div className="lt-metric-cell">
               <span className="lt-metric-label">
-                <IonIcon icon={locationOutline} aria-hidden="true" /> HUB DE DESTINO
+                <IonIcon icon={locationOutline} aria-hidden="true" /> Destino
               </span>
               <strong className="lt-metric-value">{pkg.destinationHub}</strong>
             </div>
 
             <div className="lt-metric-cell">
               <span className="lt-metric-label">
-                <IonIcon icon={scaleOutline} aria-hidden="true" /> MASA VERIFICADA
+                <IonIcon icon={scaleOutline} aria-hidden="true" /> Peso
               </span>
               <strong className="lt-metric-value lt-tabular-nums">
                 {pkg.weightKg.toFixed(2)} kg
@@ -164,7 +146,7 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
 
             <div className="lt-metric-cell">
               <span className="lt-metric-label">
-                <IonIcon icon={timeOutline} aria-hidden="true" /> TELEMETRÍA UTC
+                <IonIcon icon={timeOutline} aria-hidden="true" /> Registro
               </span>
               <strong className="lt-metric-value lt-tabular-nums">
                 {formattedDate} · {formattedTime}
@@ -174,40 +156,39 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
 
           {pkg.inspectorNotes && (
             <p className="lt-inspector-notes">
-              <span className="lt-notes-prefix">NOTA TÉCNICA:</span> {pkg.inspectorNotes}
+              <span className="lt-notes-prefix">Observación:</span> {pkg.inspectorNotes}
             </p>
           )}
 
-          {/* Barra de acciones rápidas (Tarea 3: ion-button con checkmark-circle-outline y close-circle-outline) */}
-          <div className="lt-card-actions" role="group" aria-label={`Acciones de inspección para ${pkg.trackingCode}`}>
+          <div className="lt-card-actions" role="group" aria-label={`Acciones para envío ${pkg.trackingCode}`}>
             <IonButton
               fill={pkg.status === 'INSPECTED' ? 'solid' : 'outline'}
               color="success"
-              size="default"
+              size="small"
               className="lt-action-btn lt-btn-inspect"
               onClick={handleMarkInspected}
               disabled={disabled || pkg.status === 'INSPECTED'}
-              aria-label={`INSPECTED · Aprobar paquete ${pkg.trackingCode}`}
+              aria-label={`Aprobar envío ${pkg.trackingCode}`}
               aria-pressed={pkg.status === 'INSPECTED'}
               data-testid={`btn-inspect-${pkg.trackingCode}`}
             >
               <IonIcon slot="start" icon={checkmarkCircleOutline} aria-hidden="true" />
-              INSPECTED
+              Aprobar
             </IonButton>
 
             <IonButton
               fill={pkg.status === 'REJECTED' ? 'solid' : 'outline'}
               color="danger"
-              size="default"
+              size="small"
               className="lt-action-btn lt-btn-reject"
               onClick={handleMarkRejected}
               disabled={disabled || pkg.status === 'REJECTED'}
-              aria-label={`REJECTED · Rechazar paquete ${pkg.trackingCode}`}
+              aria-label={`Rechazar envío ${pkg.trackingCode}`}
               aria-pressed={pkg.status === 'REJECTED'}
               data-testid={`btn-reject-${pkg.trackingCode}`}
             >
               <IonIcon slot="start" icon={closeCircleOutline} aria-hidden="true" />
-              REJECTED
+              Rechazar
             </IonButton>
 
             {pkg.status !== 'IN_TRANSIT' && (
@@ -217,11 +198,11 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
                 className="lt-action-btn lt-btn-transit"
                 onClick={handleResetTransit}
                 disabled={disabled}
-                aria-label={`REINICIAR TRÁNSITO · Paquete ${pkg.trackingCode}`}
+                aria-label={`Devolver a cinta envío ${pkg.trackingCode}`}
                 data-testid={`btn-transit-${pkg.trackingCode}`}
               >
                 <IonIcon slot="start" icon={refreshOutline} aria-hidden="true" />
-                REINICIAR TRÁNSITO
+                Devolver a cinta
               </IonButton>
             )}
 
@@ -230,9 +211,9 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
                 type="button"
                 className="lt-btn-3d-focus"
                 onClick={() => onSelect3D(pkg)}
-                aria-label={`VER EN 3D · Paquete ${pkg.trackingCode}`}
+                aria-label={`Ver en 3D envío ${pkg.trackingCode}`}
               >
-                VER EN 3D
+                Ver en 3D
               </button>
             )}
 
@@ -244,7 +225,7 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
                 className="lt-action-btn lt-btn-delete"
                 onClick={() => void onDeletePackage(pkg.id)}
                 disabled={disabled}
-                aria-label={`Retirar y eliminar paquete ${pkg.trackingCode} de la base de datos`}
+                aria-label={`Eliminar envío ${pkg.trackingCode}`}
                 data-testid={`btn-delete-${pkg.trackingCode}`}
               >
                 <IonIcon slot="icon-only" icon={trashOutline} aria-hidden="true" />
@@ -254,12 +235,11 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
         </article>
       </IonItem>
 
-      {/* Opciones táctiles deslizables de ion-item-sliding (Tarea 2.1) */}
       <IonItemOptions side="end">
         <IonItemOption
           color="success"
           onClick={handleMarkInspected}
-          aria-label={`Deslizar para aprobar paquete ${pkg.trackingCode}`}
+          aria-label={`Deslizar para aprobar envío ${pkg.trackingCode}`}
         >
           <IonIcon slot="start" icon={checkmarkCircleOutline} aria-hidden="true" />
           Aprobar
@@ -267,7 +247,7 @@ export const PackageInspectionCard: React.FC<PackageInspectionCardProps> = ({
         <IonItemOption
           color="danger"
           onClick={handleMarkRejected}
-          aria-label={`Deslizar para rechazar paquete ${pkg.trackingCode}`}
+          aria-label={`Deslizar para rechazar envío ${pkg.trackingCode}`}
         >
           <IonIcon slot="start" icon={closeCircleOutline} aria-hidden="true" />
           Rechazar

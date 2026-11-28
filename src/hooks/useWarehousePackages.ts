@@ -74,7 +74,7 @@ export function useWarehousePackages(): UseWarehousePackagesReturn {
       const msg =
         err instanceof Error
           ? err.message
-          : 'Error inesperado al sincronizar con Supabase PostgreSQL.';
+          : 'No se pudieron actualizar los envíos en este momento.';
       if (isMountedRef.current) {
         setErrorMessage(msg);
       }
@@ -108,8 +108,14 @@ export function useWarehousePackages(): UseWarehousePackagesReturn {
       try {
         const updated = await packageService.updatePackageStatus(event.id, event.newStatus);
         if (isMountedRef.current) {
+          const readableStatus =
+            updated.status === 'INSPECTED'
+              ? 'Inspeccionado'
+              : updated.status === 'REJECTED'
+                ? 'En cuarentena'
+                : 'En tránsito';
           setFeedbackBanner(
-            `Estado actualizado en Supabase PostgreSQL: ${updated.trackingCode} → ${updated.status} (UUID: ${updated.id.slice(0, 8)}…)`
+            `Envío ${updated.trackingCode} actualizado correctamente a ${readableStatus}.`
           );
         }
       } catch (err: unknown) {
@@ -137,7 +143,7 @@ export function useWarehousePackages(): UseWarehousePackagesReturn {
         const created = await packageService.createPackage(input);
         if (isMountedRef.current) {
           setFeedbackBanner(
-            `Nuevo paquete registrado en cinta: ${created.trackingCode} con UUID v4 ${created.id}`
+            `Envío ${created.trackingCode} registrado correctamente en la línea activa.`
           );
         }
         return true;
@@ -163,7 +169,7 @@ export function useWarehousePackages(): UseWarehousePackagesReturn {
     try {
       await packageService.deletePackage(id);
       if (isMountedRef.current) {
-        setFeedbackBanner(`Paquete con UUID ${id.slice(0, 8)}… retirado de la cinta transportadora.`);
+        setFeedbackBanner(`Envío retirado correctamente del registro de la línea.`);
       }
     } catch (err: unknown) {
       const msg =

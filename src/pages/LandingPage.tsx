@@ -7,15 +7,16 @@ import {
   checkmarkCircleOutline,
   cloudDoneOutline,
   cubeOutline,
-  gitBranchOutline,
   layersOutline,
   lockClosedOutline,
-  serverOutline,
+  refreshOutline,
   shieldCheckmarkOutline,
   sparklesOutline,
-  speedometerOutline
+  speedometerOutline,
+  syncOutline
 } from 'ionicons/icons';
 import { UseWarehousePackagesReturn } from '../hooks/useWarehousePackages';
+import { ThemeToggleButton } from '../context/ThemeContext';
 import { GlassyReveal, GlassyStagger } from '../components/GlassyReveal';
 
 export interface LandingPageProps {
@@ -27,31 +28,30 @@ const MORPHING_WORDS: ReadonlyArray<{
   readonly ghost: string;
   readonly tag: string;
 }> = [
-  { active: 'Telemetry', ghost: 'Legacy', tag: 'REAL-TIME CONVEYOR C1' },
-  { active: 'UUID v4', ghost: 'Int IDs', tag: 'RFC 9562 · 128-BIT CSPRNG' },
-  { active: 'AWS Cloud', ghost: 'Mocks', tag: 'LOCALSTACK + SUPABASE DB' },
-  { active: 'WCAG AAA', ghost: 'Low UI', tag: 'LIGHTHOUSE 100/100 CERTIFIED' }
+  { active: 'Trazabilidad', ghost: 'Manual', tag: 'LÍNEA DE CLASIFICACIÓN C1' },
+  { active: 'Tiempo Real', ghost: 'Retrasos', tag: 'CONTROL DE BULTOS EN PLANTA' },
+  { active: 'Precisión', ghost: 'Errores', tag: 'VERIFICACIÓN ÓPTICA ACTIVA' },
+  { active: 'Seguridad', ghost: 'Riesgos', tag: 'IDENTIDAD ÚNICA CERTIFICADA' }
 ];
 
 const LANDING_SECTIONS: ReadonlyArray<{ readonly id: string; readonly label: string }> = [
   { id: 'hero', label: 'Inicio' },
-  { id: 'psychology', label: 'Psicología Azul' },
-  { id: 'bento', label: 'Despliegue Glassy' },
-  { id: 'cloud', label: 'BD & AWS Emulator' },
-  { id: 'cicd', label: 'Pipeline CI/CD' }
+  { id: 'ergonomia', label: 'Ergonomía Visual' },
+  { id: 'indicadores', label: 'Indicadores' },
+  { id: 'operacion', label: 'Operación Continua' }
 ];
 
+const STATUS_READABLE: Record<string, string> = {
+  IN_TRANSIT: 'En cinta',
+  INSPECTED: 'Verificado',
+  REJECTED: 'Cuarentena'
+};
+
 /**
- * ============================================================================
- * LANDING PAGE A MEDIDA — LOGITRACK EXPRESS v3.0 (PALETA AZUL PSICOLÓGICA)
- * ============================================================================
- * Composición inspirada en el patrón editorial limpio y espacioso del referente
- * visual (cabecera minimalista, titular central audaz, formas geométricas
- * flotantes, indicador vertical de progreso a la derecha y tarjeta central
- * elevada con palabra resaltada animada), re-diseñado íntegramente en una
- * paleta de azules científicamente calibrada para el ojo humano (Glacier Ice,
- * Cerulean, Sapphire y Abyssal Navy) con paneles Glassmorphism y animaciones
- * de despliegue escalonado con Framer Motion.
+ * Landing Page a medida de LogiTrack Express (`/`)
+ * - Armonía visual completa en modo Claro (Glacier Blue) y modo Oscuro (Midnight Sapphire)
+ *   controlada exclusivamente por el usuario (sin cambios automáticos entre secciones).
+ * - Lenguaje 100% orientado al cliente logístico (sin menciones técnicas de stack).
  */
 export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
   const { packages, metrics } = warehouseState;
@@ -78,11 +78,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
   };
 
   return (
-    <div className="lt-landing-page">
-      {/* Indicador vertical lateral derecho de puntos de navegación (estilo referente visual) */}
+    <div className="lt-public-page">
+      {/* Indicador vertical lateral derecho de progreso por puntos */}
       <nav
         className="lt-landing-dots-rail"
-        aria-label="Navegación rápida de secciones de la landing"
+        aria-label="Navegación rápida de secciones de la página de inicio"
       >
         {LANDING_SECTIONS.map((sec) => {
           const isActive = activeSection === sec.id;
@@ -100,50 +100,51 @@ export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
         })}
       </nav>
 
-      {/* Cabecera minimalista limpia superior (Marca izquierda · Login + Pill azul derecha) */}
-      <header className="lt-landing-header">
-        <div className="lt-landing-header-inner">
-          <Link to="/" className="lt-landing-brand" aria-label="LogiTrack Express Inicio">
-            <span className="lt-landing-logo-mark" aria-hidden="true">
+      {/* Cabecera minimalista limpia compartida con Login y Registro */}
+      <header className="lt-public-header">
+        <div className="lt-public-header-inner">
+          <Link to="/" className="lt-public-brand" aria-label="LogiTrack Express Inicio">
+            <span className="lt-public-logo-mark" aria-hidden="true">
               <IonIcon icon={cubeOutline} />
             </span>
-            <span className="lt-landing-logo-text">LogiTrack</span>
+            <span className="lt-public-logo-text">LogiTrack</span>
           </Link>
 
-          <nav className="lt-landing-top-nav" aria-label="Enlaces principales de la landing">
+          <nav className="lt-public-top-nav" aria-label="Secciones principales">
             <button
               type="button"
-              className="lt-landing-nav-anchor"
-              onClick={() => scrollToSection('psychology')}
+              className="lt-public-nav-anchor"
+              onClick={() => scrollToSection('ergonomia')}
             >
-              Diseño Azul
+              Ergonomía Visual
             </button>
             <button
               type="button"
-              className="lt-landing-nav-anchor"
-              onClick={() => scrollToSection('cloud')}
+              className="lt-public-nav-anchor"
+              onClick={() => scrollToSection('indicadores')}
             >
-              BD &amp; AWS Emulator
+              Indicadores
             </button>
             <button
               type="button"
-              className="lt-landing-nav-anchor"
-              onClick={() => scrollToSection('cicd')}
+              className="lt-public-nav-anchor"
+              onClick={() => scrollToSection('operacion')}
             >
-              CI/CD
+              Sincronización
             </button>
           </nav>
 
-          <div className="lt-landing-auth-actions">
-            <Link to="/login" className="lt-landing-login-link" data-testid="landing-link-login">
-              Login
+          <div className="lt-public-auth-actions">
+            <ThemeToggleButton />
+            <Link to="/login" className="lt-public-login-link" data-testid="landing-link-login">
+              Iniciar sesión
             </Link>
             <Link
-              to="/terminal"
-              className="lt-landing-signup-pill"
-              data-testid="landing-cta-terminal"
+              to="/register"
+              className="lt-public-signup-pill"
+              data-testid="landing-link-register"
             >
-              Abrir Terminal
+              Registrarse
             </Link>
           </div>
         </div>
@@ -154,7 +155,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
         {/* SECCIÓN 1: HERO EDITORIAL CON FORMAS AZULES Y TARJETA ELEVADA      */}
         {/* ================================================================== */}
         <section id="hero" className="lt-landing-hero" aria-labelledby="landing-hero-heading">
-          {/* Formas geométricas vectoriales flotantes en gama azul zafiro y cielo */}
           <div className="lt-geo-field" aria-hidden="true">
             <motion.span
               className="lt-geo-shape lt-geo-square-left"
@@ -205,7 +205,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
           <div className="lt-landing-hero-content">
             <div className="lt-landing-eyebrow-pill">
               <IonIcon icon={sparklesOutline} aria-hidden="true" />
-              <span>LOGITRACK EXPRESS v3.0 · REACT 19 + IONIC v8 + SUPABASE + AWS EMULATOR</span>
+              <span>LOGITRACK EXPRESS · GESTIÓN INTELIGENTE DE CENTROS LOGÍSTICOS</span>
             </div>
 
             <h1 id="landing-hero-heading" className="lt-landing-title">
@@ -213,38 +213,39 @@ export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
             </h1>
 
             <p className="lt-landing-subtitle">
-              Experiencia logística híbrida, elegante y reactiva diseñada para claridad cognitiva en tiempo real.
+              Control operativo de recepción, inspección y clasificación de envíos diseñado para máxima claridad visual.
             </p>
 
             <div className="lt-landing-hero-ctas">
-              <Link to="/terminal" className="lt-landing-btn-primary">
-                <span>Explorar Consola Glassy</span>
+              <Link to="/terminal" className="lt-btn-primary-solid" data-testid="landing-cta-terminal">
+                <span>Acceder al Panel</span>
                 <IonIcon icon={arrowForwardOutline} aria-hidden="true" />
               </Link>
-              <Link to="/cloud-infra" className="lt-landing-btn-secondary">
-                <IonIcon icon={cloudDoneOutline} aria-hidden="true" />
-                <span>Base de Datos &amp; AWS Emulator</span>
+              <Link to="/register" className="lt-btn-secondary-surface">
+                <span>Crear Cuenta de Operario</span>
               </Link>
             </div>
           </div>
 
-          {/* Tarjeta central elevada Glassmorphic (inspirada directamente en la tarjeta central de la foto) */}
+          {/* Tarjeta central elevada con vista previa en vivo */}
           <motion.div
             className="lt-hero-elevated-sheet"
-            initial={{ opacity: 0, y: 34, scale: 0.97 }}
+            initial={{ opacity: 0, y: 30, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 210, damping: 24, delay: 0.12 }}
-            whileHover={{ y: -6, transition: { type: 'spring', stiffness: 300, damping: 22 } }}
+            transition={{ type: 'spring', stiffness: 210, damping: 24, delay: 0.1 }}
+            whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300, damping: 22 } }}
           >
             <div className="lt-sheet-top-row">
               <span className="lt-sheet-slash" aria-hidden="true" />
               <span className="lt-sheet-live-pill">
                 <span className="lt-sheet-pulse-dot" aria-hidden="true" />
-                SUPABASE POSTGRESQL · {metrics.total} PAQUETES EN CINTA
+                LÍNEA ACTIVA · {metrics.total} ENVÍOS EN SEGUIMIENTO
               </span>
             </div>
 
-            <div className="lt-sheet-client-label">Hub Activo: MAD-Cargo Terminal T4 · {currentMorph.tag}</div>
+            <div className="lt-sheet-client-label">
+              Centro Operativo: MAD-Cargo Terminal T4 · {currentMorph.tag}
+            </div>
 
             <div className="lt-sheet-morph-line" aria-live="polite">
               <span className="lt-sheet-static-word">LogiTrack</span>
@@ -267,14 +268,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
               </span>
             </div>
 
-            {/* Líneas de despliegue escalonado con datos reales de Supabase */}
             <div className="lt-sheet-skeleton-bars" aria-hidden="true">
               <span className="lt-skel-bar w-85" />
               <span className="lt-skel-bar w-65 lt-skel-accent" />
               <span className="lt-skel-bar w-78" />
             </div>
 
-            <div className="lt-sheet-section-heading">Telemetría en Vivo (Despliegue Reactivo)</div>
+            <div className="lt-sheet-section-heading">Últimos envíos registrados en línea</div>
 
             <GlassyStagger className="lt-sheet-live-rows" replayKey={replayKey}>
               {previewPackages.map((pkg) => (
@@ -286,7 +286,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
                   <div className="lt-sheet-pkg-meta lt-tabular-nums">
                     <span>{pkg.weightKg.toFixed(2)} kg</span>
                     <span className={`lt-sheet-pill lt-sheet-pill-${pkg.status.toLowerCase()}`}>
-                      {pkg.status}
+                      {STATUS_READABLE[pkg.status] ?? pkg.status}
                     </span>
                   </div>
                 </GlassyReveal>
@@ -296,200 +296,185 @@ export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
         </section>
 
         {/* ================================================================== */}
-        {/* SECCIÓN 2: PSICOLOGÍA DEL COLOR AZUL Y GLASSMORPHISM               */}
+        {/* SECCIÓN 2: ERGONOMÍA VISUAL (100% FIEL AL TEMA CLARO U OSCURO)     */}
         {/* ================================================================== */}
-        <section
-          id="psychology"
-          className="lt-landing-band lt-landing-band-light"
-          aria-labelledby="psychology-heading"
-        >
+        <section id="ergonomia" className="lt-public-band" aria-labelledby="ergonomia-heading">
           <div className="lt-landing-container">
             <div className="lt-landing-section-head">
-              <span className="lt-blue-kicker">ERGONOMÍA VISUAL &amp; PSICOLOGÍA CROMÁTICA</span>
-              <h2 id="psychology-heading" className="lt-landing-h2">
-                Una paleta azul diseñada para la fisiología del ojo humano
+              <span className="lt-kicker-accent">ERGONOMÍA VISUAL Y CONFORT OPERATIVO</span>
+              <h2 id="ergonomia-heading" className="lt-public-h2">
+                Una gama azul pensada para cuidar tu vista en cada turno
               </h2>
-              <p className="lt-landing-lead">
-                El espectro azul calibrado (<strong>450–495 nm</strong>) combina serenidad operativa,
-                confianza institucional y máxima agudeza de lectura sin fatiga pupilar. Al integrar
-                capas translúcidas <em>Glassmorphism</em> con desenfoque óptico real (<code>backdrop-filter</code>),
-                la jerarquía espacial se percibe de forma intuitiva en milisegundos.
+              <p className="lt-public-lead">
+                El equilibrio entre tonos azul glaciar, cobalto y zafiro aporta calma cognitiva,
+                lectura rápida de etiquetas y adaptación instantánea entre modo diurno y modo nocturno.
               </p>
             </div>
 
             <div className="lt-palette-grid">
               <motion.article
-                className="lt-swatch-glass-card"
-                whileHover={{ y: -6 }}
+                className="lt-surface-card"
+                whileHover={{ y: -5 }}
                 transition={{ type: 'spring', stiffness: 320, damping: 24 }}
               >
-                <div className="lt-swatch-chip" style={{ background: '#F4F8FF', border: '1px solid #BFDBFE' }} />
-                <span className="lt-swatch-code">#F4F8FF · GLACIER CANVAS</span>
-                <h3>Descanso Retiniano</h3>
-                <p>Evita el deslumbramiento agresivo del blanco puro <code>#FFFFFF</code> reduciendo el estrés visual en sesiones prolongadas.</p>
+                <div className="lt-swatch-chip lt-swatch-glacier" />
+                <span className="lt-swatch-code">MODO DIURNO SUAVE</span>
+                <h3>Descanso Visual</h3>
+                <p>Fondos claros atenuados que eliminan reflejos molestos durante jornadas largas en oficina o almacén.</p>
               </motion.article>
 
               <motion.article
-                className="lt-swatch-glass-card"
-                whileHover={{ y: -6 }}
+                className="lt-surface-card"
+                whileHover={{ y: -5 }}
                 transition={{ type: 'spring', stiffness: 320, damping: 24 }}
               >
-                <div className="lt-swatch-chip" style={{ background: 'linear-gradient(135deg, #2563EB, #0284C7)' }} />
-                <span className="lt-swatch-code">#1D4ED8 · COBALT TRUST</span>
-                <h3>Confianza y Precisión</h3>
-                <p>Acento interactivo que guía la mirada hacia acciones primarias y controles críticos con contraste certificado AAA.</p>
+                <div className="lt-swatch-chip lt-swatch-cobalt" />
+                <span className="lt-swatch-code">COBALTO DE PRECISIÓN</span>
+                <h3>Confianza y Enfoque</h3>
+                <p>Destaca acciones principales, botones de clasificación y controles clave con contraste de alta legibilidad.</p>
               </motion.article>
 
               <motion.article
-                className="lt-swatch-glass-card"
-                whileHover={{ y: -6 }}
+                className="lt-surface-card"
+                whileHover={{ y: -5 }}
                 transition={{ type: 'spring', stiffness: 320, damping: 24 }}
               >
-                <div className="lt-swatch-chip" style={{ background: 'linear-gradient(135deg, #38BDF8, #BAE6FD)' }} />
-                <span className="lt-swatch-code">#38BDF8 · CERULEAN FOCUS</span>
-                <h3>Foco y Micro-Interacción</h3>
-                <p>Ilumina bordes especulares de vidrio, anillos <code>:focus-visible</code> WCAG 2.4.7 y barridos de despliegue en cascada.</p>
+                <div className="lt-swatch-chip lt-swatch-cerulean" />
+                <span className="lt-swatch-code">SEÑALIZACIÓN CLARA</span>
+                <h3>Lectura Inmediata</h3>
+                <p>Estados diferenciados por color, icono y texto para evitar errores al clasificar envíos urgentes.</p>
               </motion.article>
 
               <motion.article
-                className="lt-swatch-glass-card"
-                whileHover={{ y: -6 }}
+                className="lt-surface-card"
+                whileHover={{ y: -5 }}
                 transition={{ type: 'spring', stiffness: 320, damping: 24 }}
               >
-                <div className="lt-swatch-chip" style={{ background: 'linear-gradient(135deg, #050B18, #0F2347)' }} />
-                <span className="lt-swatch-code">#050B18 · ABYSSAL SAPPHIRE</span>
-                <h3>Modo Nave Nocturna</h3>
-                <p>Base oscura azul profunda para la consola industrial (<code>/terminal</code>), garantizando ratios &gt; 11.5:1 nivel WCAG AAA.</p>
+                <div className="lt-swatch-chip lt-swatch-sapphire" />
+                <span className="lt-swatch-code">MODO NOCTURNO TOTAL</span>
+                <h3>Turnos de Baja Luz</h3>
+                <p>Cambia toda la plataforma a modo oscuro con un clic cuando trabajes en naves con iluminación reducida.</p>
               </motion.article>
             </div>
           </div>
         </section>
 
         {/* ================================================================== */}
-        {/* SECCIÓN 3: BENTO GLASSY ANIMADO (ESTILO DASHBOARD VIDEO CASCADE)   */}
+        {/* SECCIÓN 3: INDICADORES EN CASCADA (RESPETA TEMA CLARO / OSCURO)    */}
         {/* ================================================================== */}
         <section
-          id="bento"
-          className="lt-landing-band lt-landing-band-sapphire"
-          aria-labelledby="bento-heading"
+          id="indicadores"
+          className="lt-public-band lt-public-band-alt"
+          aria-labelledby="indicadores-heading"
         >
           <div className="lt-landing-container">
-            <div className="lt-landing-section-head lt-head-dark-row">
+            <div className="lt-landing-section-head lt-head-split-row">
               <div>
-                <span className="lt-sky-kicker">GLASSY UI · FRAMER MOTION ORCHESTRATED REVEAL</span>
-                <h2 id="bento-heading" className="lt-landing-h2-dark">
-                  Despliegue fluido de telemetría en paneles de cristal
+                <span className="lt-kicker-accent">VISIÓN GLOBAL AL INSTANTE</span>
+                <h2 id="indicadores-heading" className="lt-public-h2">
+                  Todos los datos de tu planta en una sola mirada
                 </h2>
               </div>
               <button
                 type="button"
-                className="lt-replay-glass-btn"
+                className="lt-btn-secondary-surface"
                 onClick={() => setReplayKey((k) => k + 1)}
               >
-                <IonIcon icon={sparklesOutline} aria-hidden="true" />
-                <span>REPRODUCIR CASCADA GLASSY</span>
+                <IonIcon icon={refreshOutline} aria-hidden="true" />
+                <span>Actualizar vista</span>
               </button>
             </div>
 
-            <GlassyStagger className="lt-bento-glass-grid" replayKey={replayKey}>
-              <GlassyReveal className="lt-bento-glass-card" hoverLift>
+            <GlassyStagger className="lt-bento-overview-grid" replayKey={replayKey}>
+              <GlassyReveal className="lt-surface-card lt-bento-stat-card" hoverLift>
                 <div className="lt-bento-icon-pill">
                   <IonIcon icon={speedometerOutline} aria-hidden="true" />
                 </div>
-                <span className="lt-bento-label">UNIDADES EN TIEMPO REAL</span>
+                <span className="lt-bento-label">ENVÍOS EN PLANTA</span>
                 <strong className="lt-bento-big lt-tabular-nums">{metrics.total}</strong>
-                <p>Sincronizadas vía PostgREST desde Supabase PostgreSQL ({metrics.totalWeightKg.toFixed(1)} kg totales).</p>
+                <p>Control sincronizado en tiempo real con {metrics.totalWeightKg.toFixed(1)} kg en línea.</p>
               </GlassyReveal>
 
-              <GlassyReveal className="lt-bento-glass-card" hoverLift>
+              <GlassyReveal className="lt-surface-card lt-bento-stat-card" hoverLift>
                 <div className="lt-bento-icon-pill">
                   <IonIcon icon={shieldCheckmarkOutline} aria-hidden="true" />
                 </div>
-                <span className="lt-bento-label">ACCESIBILIDAD WCAG 2.1</span>
+                <span className="lt-bento-label">ACCESIBILIDAD CERTIFICADA</span>
                 <strong className="lt-bento-big lt-tabular-nums">100 / 100</strong>
-                <p>Auditado en Chrome Lighthouse en todas las rutas públicas desplegadas en producción.</p>
+                <p>Navegación completa por teclado, lectura asistida y contraste óptimo en modo claro y oscuro.</p>
               </GlassyReveal>
 
-              <GlassyReveal className="lt-bento-glass-card" hoverLift>
+              <GlassyReveal className="lt-surface-card lt-bento-stat-card" hoverLift>
                 <div className="lt-bento-icon-pill">
                   <IonIcon icon={layersOutline} aria-hidden="true" />
                 </div>
-                <span className="lt-bento-label">ESTABILIDAD DE MEMORIA</span>
-                <strong className="lt-bento-big lt-tabular-nums">0 Leaks</strong>
-                <p>RxJS <code>takeUntil</code> + React 19 <code>useDeferredValue</code> validados con test de estrés de 50 ciclos.</p>
+                <span className="lt-bento-label">CLASIFICACIÓN ACTIVA</span>
+                <strong className="lt-bento-big lt-tabular-nums">{metrics.inspectionRatePercent}%</strong>
+                <p>Flujo ágil por páginas para revisar, aprobar o desviar envíos sin desplazamientos interminables.</p>
               </GlassyReveal>
 
-              <GlassyReveal className="lt-bento-glass-card" hoverLift>
+              <GlassyReveal className="lt-surface-card lt-bento-stat-card" hoverLift>
                 <div className="lt-bento-icon-pill">
                   <IonIcon icon={lockClosedOutline} aria-hidden="true" />
                 </div>
-                <span className="lt-bento-label">IDENTIDAD CRIPTOGRÁFICA</span>
-                <strong className="lt-bento-big lt-tabular-nums">UUID v4</strong>
-                <p>128 bits CSPRNG (RFC 9562) inmune a colisiones multi-terminal y ataques IDOR.</p>
+                <span className="lt-bento-label">IDENTIDAD SEGURA</span>
+                <strong className="lt-bento-big lt-tabular-nums">128 bits</strong>
+                <p>Cada envío dispone de un identificador irrepetible que garantiza trazabilidad entre centros.</p>
               </GlassyReveal>
             </GlassyStagger>
           </div>
         </section>
 
         {/* ================================================================== */}
-        {/* SECCIÓN 4 & 5: BASE DE DATOS + AWS EMULATOR + CI/CD PIPELINE       */}
+        {/* SECCIÓN 4: OPERACIÓN CONTINUA Y LLAMADA A LA ACCIÓN                */}
         {/* ================================================================== */}
-        <section
-          id="cloud"
-          className="lt-landing-band lt-landing-band-sapphire-deep"
-          aria-labelledby="cloud-cicd-heading"
-        >
+        <section id="operacion" className="lt-public-band" aria-labelledby="operacion-heading">
           <div className="lt-landing-container">
             <div className="lt-landing-two-col">
-              <GlassyReveal className="lt-landing-feature-glass" hoverLift>
-                <span className="lt-sky-kicker">ARQUITECTURA CLOUD HÍBRIDA</span>
-                <h2 id="cloud-cicd-heading" className="lt-landing-h3-dark">
-                  <IonIcon icon={serverOutline} aria-hidden="true" /> Base de Datos PostgreSQL &amp; AWS Emulator (LocalStack)
+              <GlassyReveal className="lt-surface-card lt-feature-panel" hoverLift>
+                <span className="lt-kicker-accent">RESPALDO Y CONTINUIDAD</span>
+                <h2 id="operacion-heading" className="lt-public-h3">
+                  <IonIcon icon={cloudDoneOutline} aria-hidden="true" /> Persistencia en la Nube y Registro Histórico
                 </h2>
-                <p className="lt-landing-p-dark">
-                  Persistencia dual empresarial: cada alta, inspección o rechazo se consolida en{' '}
-                  <strong>Supabase PostgreSQL</strong> (<code>warehouse_packages</code> y{' '}
-                  <code>warehouse_operators</code> con RLS) y se replica hacia el{' '}
-                  <strong>AWS Emulator (puerto 4566)</strong> emulando <strong>Amazon DynamoDB</strong>,{' '}
-                  <strong>Amazon S3</strong> (manifiestos JSON) y <strong>Amazon SQS</strong> (cola de eventos).
+                <p className="lt-public-p">
+                  Cada movimiento en la cinta se guarda de forma segura en la base de datos central,
+                  generando copias de respaldo automáticas, manifiestos descargables y trazabilidad
+                  completa de cada turno.
                 </p>
-                <Link to="/cloud-infra" className="lt-inline-glass-link">
-                  <span>Abrir Consola BD &amp; AWS Emulator</span>
+                <Link to="/cloud-infra" className="lt-inline-action-link">
+                  <span>Ver Centro de Sincronización</span>
                   <IonIcon icon={arrowForwardOutline} aria-hidden="true" />
                 </Link>
               </GlassyReveal>
 
-              <GlassyReveal className="lt-landing-feature-glass" hoverLift>
-                <span className="lt-sky-kicker" id="cicd">DEVOPS &amp; AUTOMATIZACIÓN</span>
-                <h2 className="lt-landing-h3-dark">
-                  <IonIcon icon={gitBranchOutline} aria-hidden="true" /> Pipeline CI/CD Real (GitHub Actions + Vercel Edge)
+              <GlassyReveal className="lt-surface-card lt-feature-panel" hoverLift>
+                <span className="lt-kicker-accent">ACTUALIZACIÓN AUTOMATIZADA</span>
+                <h2 className="lt-public-h3">
+                  <IonIcon icon={syncOutline} aria-hidden="true" /> Control de Calidad y Alta Disponibilidad
                 </h2>
-                <p className="lt-landing-p-dark">
-                  Flujo automatizado en <code>.github/workflows/ci-cd.yml</code>: cada <em>push</em> a{' '}
-                  <code>main</code> dispara verificación estricta de tipos (<code>tsc --noEmit</code>),
-                  construcción de producción (<code>vite build</code>), prueba de humo real sobre el
-                  AWS Emulator y despliegue continuo (CD) inmutable en Vercel Edge Network.
+                <p className="lt-public-p">
+                  La plataforma cuenta con verificaciones automáticas de integridad, pruebas de servicio
+                  y publicación continua sin cortes para mantener el centro operativo las 24 horas.
                 </p>
-                <div className="lt-cicd-mini-steps" aria-label="Fases del pipeline CI/CD">
-                  <span><IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> TypeCheck</span>
-                  <span><IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> Vite Build</span>
-                  <span><IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> AWS Emulator Test</span>
-                  <span><IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> Vercel CD</span>
+                <div className="lt-status-chips-row" aria-label="Garantías de servicio">
+                  <span><IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> Verificación automática</span>
+                  <span><IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> Respaldo en vivo</span>
+                  <span><IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> Servicio 24/7</span>
                 </div>
               </GlassyReveal>
             </div>
 
-            <div className="lt-landing-final-cta">
+            <div className="lt-public-final-cta">
               <div>
-                <h3>¿Listo para auditar el terminal en vivo?</h3>
-                <p>Accede con las credenciales RFID de Supabase o entra directamente al panel operativo.</p>
+                <h3>Empieza a gestionar tu línea de envíos ahora</h3>
+                <p>Inicia sesión con tu placa de operario o crea una cuenta nueva en menos de un minuto.</p>
               </div>
               <div className="lt-landing-final-buttons">
-                <Link to="/login" className="lt-landing-btn-secondary-dark">
-                  Ir a Login RFID
+                <Link to="/login" className="lt-btn-secondary-surface">
+                  Iniciar sesión
                 </Link>
-                <Link to="/terminal" className="lt-landing-btn-primary">
-                  <span>Entrar a /terminal</span>
+                <Link to="/register" className="lt-btn-primary-solid">
+                  <span>Crear cuenta</span>
                   <IonIcon icon={arrowForwardOutline} aria-hidden="true" />
                 </Link>
               </div>
@@ -498,12 +483,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ warehouseState }) => {
         </section>
       </main>
 
-      <footer className="lt-landing-footer">
+      <footer className="lt-public-footer">
         <div className="lt-landing-container lt-landing-footer-inner">
           <span>
-            <strong>LogiTrack Express v3.0</strong> · Desarrollo de Interfaces (0488) · 2º DAM · Instituto Nebrija
+            <strong>LogiTrack Express</strong> · Plataforma Integral de Control y Clasificación Logística
           </span>
-          <span>Luis Lázaro Pimentel (@Thepimen) · React 19 + Ionic v8 + Supabase + AWS Emulator</span>
+          <span>Centros Operativos MAD-HUB-01 · BCN-ZAL · VLC-Puerto · Atención 24/7</span>
         </div>
       </footer>
     </div>

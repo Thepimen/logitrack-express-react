@@ -10,10 +10,7 @@ export interface Conveyor3DStageProps {
 }
 
 /**
- * Gemelo Digital Isométrico 3D de Cinta Transportadora (Skills: emilkowalski/skills & Leonxlnx/taste-skill)
- * Renderiza en hardware (CSS 3D Matrix Transforms con `transform-style: preserve-3d`) la línea
- * logística C1 de LogiTrack Express, mostrando cada paquete real de Supabase en perspectiva
- * volumétrica de 6 caras con pórtico de escaneo láser y telemetría interactiva.
+ * Visor 3D Interactivo de la Cinta Transportadora de Clasificación
  */
 export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
   packages,
@@ -33,76 +30,74 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
   };
 
   const getStatusColorHex = (status: PackageStatus): string => {
-    if (status === 'INSPECTED') return '#34D399';
-    if (status === 'REJECTED') return '#F87171';
-    return '#38BDF8';
+    if (status === 'INSPECTED') return '#10B981';
+    if (status === 'REJECTED') return '#EF4444';
+    return '#2563EB';
   };
 
   return (
     <section
-      className={`lt-conveyor-3d-shell ${compact ? 'lt-conveyor-compact' : ''}`}
-      aria-label="Gemelo digital isométrico 3D de cinta transportadora LogiTrack Express"
+      className={`lt-surface-card lt-conveyor-3d-shell ${compact ? 'lt-conveyor-compact' : ''}`}
+      aria-label="Vista tridimensional interactiva de la cinta transportadora"
     >
       <div className="lt-conveyor-3d-topbar">
         <div className="lt-conveyor-title-group">
           <span className="lt-live-dot" aria-hidden="true" />
           <div>
             <h2 className="lt-conveyor-heading">
-              GEMELO DIGITAL 3D · LÍNEA DE CLASIFICACIÓN C1 (MAD-HUB-01)
+              CINTA TRANSPORTADORA EN VIVO · LÍNEA C1 (MAD-HUB-01)
             </h2>
             <p className="lt-conveyor-sub">
-              Proyección volumétrica CSS 3D a 60fps sincronizada con PostgreSQL ({packages.length}{' '}
-              unidades activas)
+              Seguimiento espacial en tiempo real ({packages.length} envíos en movimiento)
             </p>
           </div>
         </div>
 
-        <div className="lt-conveyor-controls" role="group" aria-label="Controles de cámara 3D">
+        <div className="lt-conveyor-controls" role="group" aria-label="Controles de cámara">
           <label className="lt-3d-slider-label">
-            <span>INCLINACIÓN X ({pitchDeg}°)</span>
+            <span>Inclinación ({pitchDeg}°)</span>
             <input
               type="range"
               min={35}
               max={72}
               value={pitchDeg}
               onChange={(e) => setPitchDeg(Number(e.target.value))}
-              aria-label="Ángulo de inclinación vertical X de la cámara 3D"
+              aria-label="Ángulo de inclinación vertical de la vista 3D"
             />
           </label>
           <label className="lt-3d-slider-label">
-            <span>ROTACIÓN Z ({yawDeg}°)</span>
+            <span>Rotación ({yawDeg}°)</span>
             <input
               type="range"
               min={-65}
               max={15}
               value={yawDeg}
               onChange={(e) => setYawDeg(Number(e.target.value))}
-              aria-label="Ángulo de rotación horizontal Z de la cámara 3D"
+              aria-label="Ángulo de rotación horizontal de la vista 3D"
             />
           </label>
           <button
             type="button"
-            className="lt-3d-toggle-btn"
+            className="lt-btn-secondary-surface lt-btn-xs"
             onClick={() => setIsBeltPaused((prev) => !prev)}
             aria-pressed={isBeltPaused}
           >
-            {isBeltPaused ? 'REANUDAR CINTA 3D' : 'PAUSAR CINTA 3D'}
+            {isBeltPaused ? 'Reanudar cinta' : 'Pausar cinta'}
           </button>
           <button
             type="button"
-            className="lt-3d-toggle-btn"
+            className="lt-btn-secondary-surface lt-btn-xs"
             onClick={() => {
               setPitchDeg(56);
               setYawDeg(-32);
             }}
           >
-            VISTA ISOMÉTRICA
+            Restablecer vista
           </button>
         </div>
       </div>
 
       <div className="lt-conveyor-3d-Grid">
-        {/* Escenario 3D con perspective: 1200px */}
         <div className="lt-scene-viewport">
           <div
             className={`lt-scene-plane ${isBeltPaused ? 'lt-belt-paused' : ''}`}
@@ -110,23 +105,18 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
               transform: `rotateX(${pitchDeg}deg) rotateZ(${yawDeg}deg)`
             }}
           >
-            {/* Superficie de rodillos de la cinta transportadora */}
             <div className="lt-belt-surface">
               <div className="lt-belt-rollers" />
               <div className="lt-belt-guide-rail lt-rail-north" />
               <div className="lt-belt-guide-rail lt-rail-south" />
 
-              {/* Pórtico central de escaneo óptico láser 3D */}
               <div className="lt-laser-gantry" aria-hidden="true">
-                <div className="lt-gantry-pillar lt-pillar-left" />
-                <div className="lt-gantry-pillar lt-pillar-right" />
                 <div className="lt-gantry-bridge">
-                  <span className="lt-gantry-label">OPTICAL RFID GATE · S04</span>
+                  <span className="lt-gantry-label">ESCÁNER ÓPTICO · S04</span>
                 </div>
                 <div className="lt-laser-sheet" />
               </div>
 
-              {/* Renderizado 3D volumétrico de cada paquete de Supabase */}
               {packages.slice(0, 8).map((pkg, idx) => {
                 const heightPx = getParcelHeightPx(pkg.weightKg);
                 const isSelected = activePkg?.id === pkg.id;
@@ -150,7 +140,7 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
                         '--parcel-accent': accentColor
                       } as React.CSSProperties
                     }
-                    aria-label={`${pkg.trackingCode} ${pkg.weightKg}kg · Estado ${pkg.status}`}
+                    aria-label={`${pkg.trackingCode} ${pkg.weightKg}kg`}
                   >
                     <span className="lt-cube-face lt-cube-top">
                       <span className="lt-cube-code">{pkg.trackingCode}</span>
@@ -158,9 +148,6 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
                     </span>
                     <span className="lt-cube-face lt-cube-front" />
                     <span className="lt-cube-face lt-cube-right" />
-                    <span className="lt-cube-face lt-cube-left" />
-                    <span className="lt-cube-face lt-cube-back" />
-                    <span className="lt-cube-shadow" />
                   </button>
                 );
               })}
@@ -168,38 +155,37 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
           </div>
         </div>
 
-        {/* Panel lateral de telemetría del paquete seleccionado en el escáner 3D */}
         {activePkg && (
           <aside
             className="lt-3d-inspector-panel"
-            aria-label={`Telemetría de unidad seleccionada ${activePkg.trackingCode}`}
+            aria-label={`Detalle del envío seleccionado ${activePkg.trackingCode}`}
           >
             <div className="lt-3d-panel-header">
-              <span className="lt-3d-tag">UNIDAD EN FOCO LÁSER</span>
+              <span className="lt-3d-tag">ENVÍO SELECCIONADO</span>
               <strong className="lt-3d-code">{activePkg.trackingCode}</strong>
             </div>
 
             <dl className="lt-3d-specs">
               <div>
-                <dt>UUID v4 (RFC 9562)</dt>
+                <dt>Referencia única</dt>
                 <dd className="lt-mono-small">{activePkg.id}</dd>
               </div>
               <div>
-                <dt>HUB DESTINO</dt>
+                <dt>Centro de destino</dt>
                 <dd>{activePkg.destinationHub}</dd>
               </div>
               <div>
-                <dt>MASA / PRIORIDAD</dt>
+                <dt>Peso y prioridad</dt>
                 <dd className="lt-tabular-nums">
                   {activePkg.weightKg.toFixed(2)} kg · {activePkg.priority}
                 </dd>
               </div>
               <div>
-                <dt>SECTOR CINTA</dt>
+                <dt>Sector de cinta</dt>
                 <dd>{activePkg.aisleBay}</dd>
               </div>
               <div>
-                <dt>DIAGNÓSTICO</dt>
+                <dt>Notas de inspección</dt>
                 <dd>{activePkg.inspectorNotes || 'Sin incidencias registradas'}</dd>
               </div>
             </dl>
@@ -214,7 +200,7 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
                     void onStatusChange({ id: activePkg.id, newStatus: 'INSPECTED' })
                   }
                 >
-                  APROBAR (INSPECTED)
+                  Aprobar envío
                 </button>
                 <button
                   type="button"
@@ -224,7 +210,7 @@ export const Conveyor3DStage: React.FC<Conveyor3DStageProps> = ({
                     void onStatusChange({ id: activePkg.id, newStatus: 'REJECTED' })
                   }
                 >
-                  CUARENTENA (REJECTED)
+                  A cuarentena
                 </button>
               </div>
             )}

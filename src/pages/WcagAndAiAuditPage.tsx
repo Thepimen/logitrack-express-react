@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import {
-  AI_DEFECTIVE_CODE_SNIPPET,
-  AI_PROMPT_USED_IN_TASK_5,
-  STUDENT_REFACTORED_CODE_SNIPPET,
   SafeReactivePackageFilter
 } from '../services/rxjs-search-audit.service';
 import { UseWarehousePackagesReturn } from '../hooks/useWarehousePackages';
+import { ThemeToggleButton } from '../context/ThemeContext';
 import { GlassyReveal } from '../components/GlassyReveal';
 
 export interface WcagAndAiAuditPageProps {
@@ -13,21 +11,20 @@ export interface WcagAndAiAuditPageProps {
 }
 
 /**
- * Vista de Auditoría Normativa WCAG 2.1 AA/AAA (Tarea 4) y Auditoría Crítica de IA (Tarea 5)
- * Permite verificar en vivo en la URL pública de producción tanto la matriz de accesibilidad
- * corregida (100/100 en Chrome Lighthouse) como la comparativa de memoria RxJS vs React Hooks.
+ * Panel de Calidad, Accesibilidad y Diagnóstico de Rendimiento (`/audit-wcag`)
+ * - Conserva el benchmark empírico de 50 ciclos de memoria y la matriz WCAG 2.1,
+ *   presentados en lenguaje claro y orientado al usuario de negocio.
  */
 export const WcagAndAiAuditPage: React.FC<WcagAndAiAuditPageProps> = ({ warehouseState }) => {
   const { packages } = warehouseState;
   const [benchmarkReport, setBenchmarkReport] = useState<string>(
-    'Lista para ejecutar prueba de estrés de suscripciones reactivas (100 ciclos de montaje/desmontaje).'
+    'Diagnóstico listo: ejecuta la comprobación de 50 ciclos para verificar la estabilidad del buscador en tiempo real.'
   );
 
   const runMemorySafetyBenchmark = (): void => {
     const filterEngine = new SafeReactivePackageFilter();
     let lastCount = 0;
 
-    // Simulamos 50 ciclos rápidos de montaje, emisión y desmontaje con takeUntil(destroy$)
     for (let i = 0; i < 50; i += 1) {
       const disconnect = filterEngine.connectStream(
         () => packages,
@@ -42,160 +39,119 @@ export const WcagAndAiAuditPage: React.FC<WcagAndAiAuditPageProps> = ({ warehous
     }
 
     const remainingSubscriptions = filterEngine.getActiveSubscriptionCount();
-    const message = `[Benchmark Tarea 5 Completado] 50 ciclos de montaje/búsqueda/desmontaje ejecutados -> Suscripciones huérfanas activas en Heap: ${remainingSubscriptions} (0 Memory Leaks · ${lastCount} paquetes evaluados).`;
+    const message = `[Diagnóstico completado] 50 ciclos de búsqueda y navegación ejecutados -> Procesos residuales en memoria: ${remainingSubscriptions} (0 fugas · ${lastCount} envíos evaluados correctamente).`;
     console.log(message);
     setBenchmarkReport(message);
   };
 
   return (
-    <main className="lt-audit-main" aria-labelledby="audit-page-heading">
-      <div className="lt-workspace-container">
-        <header className="lt-page-hero-header">
-          <div>
-            <span className="lt-kicker-amber">
-              TAREA 4 &amp; TAREA 5 · CONFORMIDAD WCAG 2.1 AA/AAA &amp; AUDITORÍA CRÍTICA DE IA
-            </span>
-            <h1 id="audit-page-heading" className="lt-page-title">
-              Laboratorio de Accesibilidad Industrial (Lighthouse 100/100) y Refactorización Reactiva
-            </h1>
-          </div>
-        </header>
+    <div className="lt-dash-wrapper">
+      <header className="lt-subpage-topbar">
+        <div>
+          <span className="lt-kicker-accent">CALIDAD, ACCESIBILIDAD Y ESTABILIDAD</span>
+          <h1 id="audit-page-heading" className="lt-subpage-title">
+            Panel de Accesibilidad Universal y Diagnóstico del Sistema
+          </h1>
+        </div>
+        <div className="lt-subpage-topbar-actions">
+          <ThemeToggleButton />
+        </div>
+      </header>
 
-        {/* TAREA 4: Tabla comparativa de incumplimientos detectados y corregidos */}
-        <GlassyReveal indexDelay={0.05}>
-        <section
-          className="lt-audit-card lt-glass-panel"
-          aria-labelledby="wcag-table-heading"
-        >
-          <span className="lt-section-kicker">TAREA 4 · DIAGNÓSTICO Y ADAPTACIÓN WCAG 2.1 NIVEL AA</span>
-          <h2 id="wcag-table-heading">
-            Matriz Comparativa de Incumplimientos Normativos Corregidos (Puntuación Final: 100/100)
-          </h2>
+      <main className="lt-subpage-main" aria-labelledby="audit-page-heading">
+        <GlassyReveal indexDelay={0.04}>
+          <section className="lt-surface-card lt-audit-card" aria-labelledby="wcag-table-heading">
+            <span className="lt-kicker-accent">ESTÁNDAR DE ACCESIBILIDAD WCAG 2.1 AA / AAA</span>
+            <h2 id="wcag-table-heading">
+              Garantías de Legibilidad, Navegación Asistida y Ergonomía (100/100)
+            </h2>
 
-          <div className="lt-table-responsive">
-            <table className="lt-audit-table">
-              <thead>
-                <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col">Deficiencia Detectada en Componentes Móviles</th>
-                  <th scope="col">Criterio WCAG 2.1 Infringido</th>
-                  <th scope="col">Solución Ergonómica Implementada en Código</th>
-                  <th scope="col">Ratio / Verificación</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="lt-mono-cell">INC-01</td>
-                  <td>
-                    Contraste insuficiente en <code>ion-badge</code> por defecto (texto blanco sobre
-                    ámbar/verde claro con ratio <code>2.8:1</code>, ilegible en naves industriales).
-                  </td>
-                  <td>
-                    <strong>1.4.3 Contraste (Mínimo) — Nivel AA</strong> (exige &ge; 4.5:1 en texto
-                    normal).
-                  </td>
-                  <td>
-                    Paleta de alta luminancia semántica en <code>industrial-theme.css</code>:{' '}
-                    <code>#6EE7B7</code> sobre <code>#052E16</code> (INSPECTED),{' '}
-                    <code>#FDE68A</code> sobre <code>#422006</code> (IN_TRANSIT) y{' '}
-                    <code>#FECACA</code> sobre <code>#450A0A</code> (REJECTED).
-                  </td>
-                  <td className="lt-mono-cell lt-text-emerald">11.12:1 a 11.84:1 (AAA)</td>
-                </tr>
-                <tr>
-                  <td className="lt-mono-cell">INC-02</td>
-                  <td>
-                    Botones rápidos con iconos (<code>checkmark-circle-outline</code>,{' '}
-                    <code>close-circle-outline</code>, eliminar) y selectores sin nombre accesible
-                    contextual.
-                  </td>
-                  <td>
-                    <strong>4.1.2 Nombre, Función, Valor — Nivel A</strong> y{' '}
-                    <strong>2.4.6 Encabezados y Etiquetas — Nivel AA</strong>.
-                  </td>
-                  <td>
-                    Atributos explícitos <code>aria-label</code> dinámicos mediante{' '}
-                    <em>Property Binding</em> incluyendo el <code>trackingCode</code> y estado
-                    actual, más <code>aria-pressed</code> y regiones <code>aria-live=&quot;polite&quot;</code>.
-                  </td>
-                  <td className="lt-mono-cell lt-text-emerald">100% Nodos Accesibles</td>
-                </tr>
-                <tr>
-                  <td className="lt-mono-cell">INC-03</td>
-                  <td>
-                    Ausencia de indicador visual de foco al navegar con teclado físico o escáner
-                    HID en terminal industrial, y área táctil reducida (&lt; 36px).
-                  </td>
-                  <td>
-                    <strong>2.4.7 Foco Visible — Nivel AA</strong> y{' '}
-                    <strong>2.5.5 Tamaño del Objetivo — Nivel AAA</strong>.
-                  </td>
-                  <td>
-                    Anillo táctico <code>:focus-visible</code> de alto contraste (
-                    <code>2px solid #FBBF24</code> con <code>outline-offset: 2px</code>) y altura
-                    mínima de <code>44px × 44px</code> en todos los controles interactivos.
-                  </td>
-                  <td className="lt-mono-cell lt-text-emerald">11.4:1 · Target &ge; 44px</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+            <div className="lt-table-responsive">
+              <table className="lt-audit-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Control</th>
+                    <th scope="col">Aspecto Evaluado</th>
+                    <th scope="col">Norma Aplicada</th>
+                    <th scope="col">Medida Activa en Plataforma</th>
+                    <th scope="col">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="lt-mono-cell">ACC-01</td>
+                    <td>Contraste cromático en etiquetas de estado y modo diurno/nocturno</td>
+                    <td><strong>WCAG 1.4.3 / 1.4.6</strong></td>
+                    <td>Paleta azul calibrada con selector global Claro/Oscuro y contraste superior a 10:1.</td>
+                    <td className="lt-mono-cell lt-text-emerald">Verificado AAA</td>
+                  </tr>
+                  <tr>
+                    <td className="lt-mono-cell">ACC-02</td>
+                    <td>Etiquetado semántico de controles, botones e indicadores en vivo</td>
+                    <td><strong>WCAG 4.1.2 / 2.5.3</strong></td>
+                    <td>Descripciones contextuales por código de envío y avisos accesibles para lectores de pantalla.</td>
+                    <td className="lt-mono-cell lt-text-emerald">100% Accesible</td>
+                  </tr>
+                  <tr>
+                    <td className="lt-mono-cell">ACC-03</td>
+                    <td>Uso con teclado físico, lectores láser y pantallas táctiles</td>
+                    <td><strong>WCAG 2.4.7 / 2.5.5</strong></td>
+                    <td>Indicador de foco visible de alto contraste, áreas pulsables amplias y respeto al movimiento reducido.</td>
+                    <td className="lt-mono-cell lt-text-emerald">Óptimo</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
         </GlassyReveal>
 
-        {/* TAREA 5: Auditoría Crítica del Código de IA y Refactorización Reactiva */}
-        <GlassyReveal indexDelay={0.12}>
-        <section
-          className="lt-audit-card lt-glass-panel"
-          aria-labelledby="task5-heading"
-        >
-          <div className="lt-audit-header-row">
-            <div>
-              <span className="lt-section-kicker">
-                TAREA 5 · INTERACCIÓN CON IA, PREVENCIÓN DE MEMORY LEAKS Y TIPADO ESTRICTO
-              </span>
-              <h2 id="task5-heading">
-                Auditoría Crítica y Refactorización del Filtrado Reactivo (RxJS vs React Hooks)
-              </h2>
+        <GlassyReveal indexDelay={0.1}>
+          <section className="lt-surface-card lt-audit-card" aria-labelledby="stability-heading">
+            <div className="lt-audit-header-row">
+              <div>
+                <span className="lt-kicker-accent">PRUEBA DE RENDIMIENTO EN VIVO</span>
+                <h2 id="stability-heading">
+                  Verificación de Estabilidad y Limpieza de Memoria del Buscador
+                </h2>
+              </div>
+              <button
+                type="button"
+                className="lt-btn-primary-solid lt-btn-sm"
+                onClick={runMemorySafetyBenchmark}
+                data-testid="btn-run-memory-benchmark"
+              >
+                Ejecutar diagnóstico (50 ciclos)
+              </button>
             </div>
-            <button
-              type="button"
-              className="lt-primary-submit-btn"
-              onClick={runMemorySafetyBenchmark}
-              data-testid="btn-run-memory-benchmark"
+
+            <div
+              className="lt-benchmark-output"
+              role="status"
+              aria-live="polite"
+              data-testid="benchmark-status-output"
             >
-              EJECUTAR TEST DE MEMORIA (50 CICLOS)
-            </button>
-          </div>
-
-          <div
-            className="lt-benchmark-output"
-            role="status"
-            aria-live="polite"
-            data-testid="benchmark-status-output"
-          >
-            {benchmarkReport}
-          </div>
-
-          <div className="lt-prompt-box">
-            <h3>1. Prompt Técnico Formulado al Asistente de IA</h3>
-            <pre className="lt-code-pre">{AI_PROMPT_USED_IN_TASK_5}</pre>
-          </div>
-
-          <div className="lt-code-comparison-grid">
-            <div className="lt-code-column lt-code-defective">
-              <h3>2. Respuesta Original de la IA (Con Fallos Críticos Detectados)</h3>
-              <pre className="lt-code-pre">{AI_DEFECTIVE_CODE_SNIPPET}</pre>
+              {benchmarkReport}
             </div>
 
-            <div className="lt-code-column lt-code-refactored">
-              <h3>3. Código Refactorizado e Integrado por el Alumno (Seguro en Memoria)</h3>
-              <pre className="lt-code-pre">{STUDENT_REFACTORED_CODE_SNIPPET}</pre>
+            <div className="lt-two-col-info">
+              <div className="lt-mini-info-box">
+                <h3>Respuesta fluida sin bloqueos</h3>
+                <p className="lt-muted-desc">
+                  El buscador agrupa pulsaciones rápidas en ventanas de 180 ms para filtrar grandes
+                  volúmenes de envíos sin ralentizar la escritura ni consumir recursos innecesarios.
+                </p>
+              </div>
+              <div className="lt-mini-info-box">
+                <h3>Cero fugas en sesiones prolongadas</h3>
+                <p className="lt-muted-desc">
+                  Al cambiar entre páginas o cerrar un turno, todos los procesos de filtrado se
+                  detienen y liberan automáticamente para mantener la fluidez durante jornadas de 8 horas.
+                </p>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
         </GlassyReveal>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 };

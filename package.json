@@ -1,7 +1,7 @@
 {
   "name": "logitrack-express-react",
   "private": true,
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Actividad 2 Evaluable - Desarrollo de Interfaces (2º DAM - Instituto Nebrija) - LogiTrack Express v3.0: Interfaz Híbrida Glassmorphism Azul con Ionic v8, React 19, Framer Motion, TypeScript Estricto, Supabase PostgreSQL, AWS Emulator (LocalStack) y CI/CD",
   "author": "Luis Lázaro Pimentel <luislazaropimentel@gmail.com>",
   "type": "module",

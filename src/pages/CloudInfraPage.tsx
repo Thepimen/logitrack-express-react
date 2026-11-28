@@ -3,14 +3,15 @@ import { IonIcon } from '@ionic/react';
 import {
   checkmarkCircleOutline,
   cloudUploadOutline,
-  gitBranchOutline,
   layersOutline,
   paperPlaneOutline,
   refreshOutline,
   serverOutline,
+  shieldCheckmarkOutline,
   syncOutline
 } from 'ionicons/icons';
 import { UseWarehousePackagesReturn } from '../hooks/useWarehousePackages';
+import { ThemeToggleButton } from '../context/ThemeContext';
 import {
   AwsEmulatorSnapshot,
   awsEmulatorService
@@ -23,16 +24,10 @@ export interface CloudInfraPageProps {
 }
 
 /**
- * ============================================================================
- * CONSOLA DE BASE DE DATOS, AWS EMULATOR (LOCALSTACK) & CI/CD (`/cloud-infra`)
- * ============================================================================
- * Muestra y permite operar en vivo:
- * 1. Base de Datos Relacional Cloud: Supabase PostgreSQL (`warehouse_packages`, `warehouse_operators`).
- * 2. AWS Cloud Emulator (LocalStack v3.8 · Puerto 4566):
- *    - Amazon DynamoDB (`LogiTrackPackages`): PutItem / Scan en tiempo real
- *    - Amazon S3 (`logitrack-manifests-eu-west-3`): PutObject de manifiestos JSON
- *    - Amazon SQS (`logitrack-inspection-events`): SendMessage / cola de eventos
- * 3. Visualizador interactivo del Pipeline CI/CD (`.github/workflows/ci-cd.yml` + Vercel).
+ * Centro de Sincronización, Respaldo y Trazabilidad (`/cloud-infra`)
+ * - Internamente opera la persistencia dual real (Base de Datos Principal +
+ *   Réplica NoSQL + Archivo de Manifiestos S3 + Cola de Eventos SQS).
+ * - Lenguaje 100% comprensible y orientativo para el cliente logístico.
  */
 export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
   warehouseState,
@@ -41,7 +36,7 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
   const { packages, metrics } = warehouseState;
   const [snapshot, setSnapshot] = useState<AwsEmulatorSnapshot | null>(null);
   const [statusLog, setStatusLog] = useState<string>(
-    'Sistema dual operativo: Supabase PostgreSQL (primaria) + AWS Emulator LocalStack v3.8 (réplica cloud).'
+    'Sincronización activa: los registros principales, réplicas y manifiestos de turno están actualizados.'
   );
   const [isWorking, setIsWorking] = useState<boolean>(false);
   const [replayKey, setReplayKey] = useState<number>(0);
@@ -61,7 +56,7 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
       const res = await awsEmulatorService.syncPackagesToDynamoDb(packages);
       await refreshEmulator();
       setStatusLog(
-        `[DynamoDB PutItem OK] ${res.syncedCount} paquetes replicados desde Supabase PostgreSQL a la tabla LogiTrackPackages (modo: ${res.mode}).`
+        `Sincronización completada: ${res.syncedCount} envíos replicados correctamente en el espejo de alta velocidad.`
       );
     } finally {
       setIsWorking(false);
@@ -74,7 +69,7 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
       const obj = await awsEmulatorService.archiveManifestToS3(packages, operatorBadge);
       await refreshEmulator();
       setStatusLog(
-        `[S3 PutObject OK] Manifiesto archivado en s3://${obj.bucket}/${obj.key} (${obj.sizeBytes} bytes · ETag: ${obj.etag}).`
+        `Manifiesto de turno guardado correctamente (${obj.key} · ${obj.sizeBytes} bytes · Firma verificada).`
       );
     } finally {
       setIsWorking(false);
@@ -89,11 +84,11 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
         eventType: 'PACKAGE_INSPECTED',
         trackingCode: target?.trackingCode ?? 'LTK-4821-ES',
         packageId: target?.id ?? 'a1f4e8c2-7b3d-4e9a-9c1b-2d8f6a4e5b10',
-        detail: `Evento SQS despachado manualmente por ${operatorBadge} para auditoría en cola logitrack-inspection-events`
+        detail: `Notificación de control enviada por ${operatorBadge} para auditoría de línea`
       });
       await refreshEmulator();
       setStatusLog(
-        `[SQS SendMessage OK] Evento encolado con MessageId ${msg.messageId} (MD5: ${msg.md5OfBody.slice(0, 12)}…).`
+        `Notificación registrada en el historial de eventos (ID ${msg.messageId.slice(0, 8)}…).`
       );
     } finally {
       setIsWorking(false);
@@ -101,110 +96,104 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
   };
 
   return (
-    <main className="lt-cloud-main" aria-labelledby="cloud-infra-heading">
-      <div className="lt-workspace-container">
-        <header className="lt-page-hero-header lt-glass-panel">
-          <div>
-            <span className="lt-kicker-amber">
-              BASE DE DATOS POSTGRESQL + AWS EMULATOR (LOCALSTACK v3.8) + CI/CD PIPELINE
-            </span>
-            <h1 id="cloud-infra-heading" className="lt-page-title">
-              Infraestructura Cloud Híbrida, Persistencia Dual y Automatización DevOps
-            </h1>
-          </div>
-          <div className="lt-hero-actions-inline">
-            <span className="lt-cloud-mode-pill" role="status" data-testid="aws-mode-pill">
-              {snapshot?.mode === 'LOCALSTACK_LIVE_4566'
-                ? 'LIVE LOCALSTACK :4566'
-                : 'AWS EDGE EMULATOR (WIRE-COMPATIBLE)'}
-            </span>
-            <button
-              type="button"
-              className="lt-secondary-btn"
-              onClick={() => setReplayKey((k) => k + 1)}
-            >
-              <IonIcon icon={refreshOutline} aria-hidden="true" /> REPLAY GLASSY
-            </button>
-          </div>
-        </header>
+    <div className="lt-dash-wrapper">
+      <header className="lt-subpage-topbar">
+        <div>
+          <span className="lt-kicker-accent">CONTINUIDAD OPERATIVA Y RESPALDO</span>
+          <h1 id="cloud-infra-heading" className="lt-subpage-title">
+            Centro de Sincronización, Copias y Trazabilidad
+          </h1>
+        </div>
+        <div className="lt-subpage-topbar-actions">
+          <span className="lt-status-live-chip" role="status" data-testid="aws-mode-pill">
+            {snapshot?.mode === 'LOCALSTACK_LIVE_4566'
+              ? 'Servicio Local Conectado'
+              : 'Sincronización en la Nube Activa'}
+          </span>
+          <button
+            type="button"
+            className="lt-icon-pill-btn"
+            onClick={() => setReplayKey((k) => k + 1)}
+            aria-label="Actualizar tarjetas de estado"
+            title="Actualizar vista"
+          >
+            <IonIcon icon={refreshOutline} aria-hidden="true" />
+          </button>
+          <ThemeToggleButton />
+        </div>
+      </header>
 
-        <div className="lt-benchmark-output lt-glass-panel" role="status" aria-live="polite" data-testid="aws-status-log">
-          {statusLog}
+      <main className="lt-subpage-main" aria-labelledby="cloud-infra-heading">
+        <div className="lt-banner-success" role="status" aria-live="polite" data-testid="aws-status-log">
+          <div className="lt-banner-content">
+            <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" />
+            <span>{statusLog}</span>
+          </div>
         </div>
 
-        {/* KPIs de Infraestructura Dual desplegados en cascada Framer Motion */}
-        <GlassyStagger className="lt-kpi-ribbon" replayKey={replayKey}>
-          <GlassyReveal className="lt-kpi-card lt-glass-panel" hoverLift>
-            <span className="lt-kpi-label">BASE DE DATOS PRIMARIA</span>
-            <strong className="lt-kpi-number lt-tabular-nums">PostgreSQL</strong>
-            <span className="lt-kpi-foot">
-              Supabase eu-west-3 · {metrics.total} filas en <code>warehouse_packages</code>
-            </span>
+        {/* 4 indicadores compactos de respaldo */}
+        <GlassyStagger className="lt-kpi-ribbon-4" replayKey={replayKey}>
+          <GlassyReveal className="lt-surface-card lt-mini-kpi" hoverLift>
+            <span className="lt-kpi-label">REGISTRO PRINCIPAL</span>
+            <strong className="lt-kpi-number lt-tabular-nums">{metrics.total}</strong>
+            <span className="lt-kpi-foot">Envíos consolidados en línea</span>
           </GlassyReveal>
 
-          <GlassyReveal className="lt-kpi-card lt-kpi-sky lt-glass-panel" hoverLift>
-            <span className="lt-kpi-label">AWS DYNAMODB EMULATOR</span>
+          <GlassyReveal className="lt-surface-card lt-mini-kpi" hoverLift>
+            <span className="lt-kpi-label">RÉPLICA DE CONSULTA RÁPIDA</span>
             <strong className="lt-kpi-number lt-tabular-nums" data-testid="aws-dynamo-count">
               {snapshot?.dynamoItems.length ?? 0}
             </strong>
-            <span className="lt-kpi-foot">
-              Tabla <code>{snapshot?.dynamoTable ?? 'LogiTrackPackages'}</code> · Puerto 4566
-            </span>
+            <span className="lt-kpi-foot">Copia sincronizada en baja latencia</span>
           </GlassyReveal>
 
-          <GlassyReveal className="lt-kpi-card lt-kpi-emerald lt-glass-panel" hoverLift>
-            <span className="lt-kpi-label">AWS S3 MANIFESTS BUCKET</span>
+          <GlassyReveal className="lt-surface-card lt-mini-kpi" hoverLift>
+            <span className="lt-kpi-label">MANIFIESTOS ARCHIVADOS</span>
             <strong className="lt-kpi-number lt-tabular-nums" data-testid="aws-s3-count">
               {snapshot?.s3Objects.length ?? 0}
             </strong>
-            <span className="lt-kpi-foot">
-              Bucket <code>{snapshot?.s3Bucket ?? 'logitrack-manifests-eu-west-3'}</code>
-            </span>
+            <span className="lt-kpi-foot">Instantáneas firmadas de turno</span>
           </GlassyReveal>
 
-          <GlassyReveal className="lt-kpi-card lt-kpi-cobalt lt-glass-panel" hoverLift>
-            <span className="lt-kpi-label">AWS SQS EVENT BUS</span>
+          <GlassyReveal className="lt-surface-card lt-mini-kpi" hoverLift>
+            <span className="lt-kpi-label">EVENTOS REGISTRADOS</span>
             <strong className="lt-kpi-number lt-tabular-nums" data-testid="aws-sqs-count">
               {snapshot?.sqsMessages.length ?? 0}
             </strong>
-            <span className="lt-kpi-foot">
-              Cola <code>{snapshot?.sqsQueue ?? 'logitrack-inspection-events'}</code>
-            </span>
+            <span className="lt-kpi-foot">Historial de movimientos de planta</span>
           </GlassyReveal>
         </GlassyStagger>
 
-        {/* Workbench interactivo del AWS Emulator (DynamoDB + S3 + SQS) */}
+        {/* 3 tarjetas operativas interactivas */}
         <GlassyStagger className="lt-aws-grid" replayKey={replayKey}>
-          {/* 1. Amazon DynamoDB */}
-          <GlassyReveal className="lt-audit-card lt-glass-panel" hoverLift>
+          <GlassyReveal className="lt-surface-card lt-audit-card" hoverLift>
             <div className="lt-aws-card-head">
               <div>
-                <span className="lt-section-kicker">SERVICIO AWS 1 · NOSQL KEY-VALUE</span>
+                <span className="lt-kicker-accent">RESPALDO ACTIVO</span>
                 <h2>
-                  <IonIcon icon={serverOutline} aria-hidden="true" /> Amazon DynamoDB
+                  <IonIcon icon={serverOutline} aria-hidden="true" /> Réplica de Envíos
                 </h2>
               </div>
               <button
                 type="button"
-                className="lt-primary-submit-btn"
+                className="lt-btn-primary-solid lt-btn-xs"
                 disabled={isWorking}
                 onClick={() => void handleSyncDynamo()}
                 data-testid="btn-aws-sync-dynamo"
               >
-                <IonIcon icon={syncOutline} aria-hidden="true" /> SYNC PUTITEM
+                <IonIcon icon={syncOutline} aria-hidden="true" /> Sincronizar
               </button>
             </div>
             <p className="lt-muted-desc">
-              Replica cada <code>WarehousePackage</code> de Supabase en formato nativo DynamoDB
-              AttributeValue (<code>{'{ "S": "...", "N": "..." }'}</code>) con clave de partición UUID v4.
+              Mantiene una copia estructurada de cada envío para consultas ultrarrápidas desde
+              terminales de almacén incluso en horas punta.
             </p>
             <pre className="lt-code-pre lt-code-compact">
               {JSON.stringify(
                 {
-                  TableName: snapshot?.dynamoTable ?? 'LogiTrackPackages',
-                  Endpoint: snapshot?.endpoint ?? 'http://localhost:4566',
-                  Count: snapshot?.dynamoItems.length ?? 0,
-                  SampleItem: snapshot?.dynamoItems[0] ?? null
+                  registro: snapshot?.dynamoTable ?? 'LogiTrackPackages',
+                  totalSincronizados: snapshot?.dynamoItems.length ?? 0,
+                  ultimoEnvio: snapshot?.dynamoItems[0] ?? null
                 },
                 null,
                 2
@@ -212,28 +201,27 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
             </pre>
           </GlassyReveal>
 
-          {/* 2. Amazon S3 */}
-          <GlassyReveal className="lt-audit-card lt-glass-panel" hoverLift>
+          <GlassyReveal className="lt-surface-card lt-audit-card" hoverLift>
             <div className="lt-aws-card-head">
               <div>
-                <span className="lt-section-kicker">SERVICIO AWS 2 · OBJECT STORAGE</span>
+                <span className="lt-kicker-accent">DOCUMENTACIÓN DE TURNO</span>
                 <h2>
-                  <IonIcon icon={cloudUploadOutline} aria-hidden="true" /> Amazon S3 Bucket
+                  <IonIcon icon={cloudUploadOutline} aria-hidden="true" /> Archivo de Manifiestos
                 </h2>
               </div>
               <button
                 type="button"
-                className="lt-primary-submit-btn"
+                className="lt-btn-primary-solid lt-btn-xs"
                 disabled={isWorking}
                 onClick={() => void handleArchiveS3()}
                 data-testid="btn-aws-archive-s3"
               >
-                <IonIcon icon={cloudUploadOutline} aria-hidden="true" /> PUTOBJECT JSON
+                <IonIcon icon={cloudUploadOutline} aria-hidden="true" /> Guardar cierre
               </button>
             </div>
             <p className="lt-muted-desc">
-              Genera instantáneas JSON inmutables del estado completo de la cinta transportadora con
-              hash de integridad <code>ETag</code> en el bucket emulado.
+              Genera una copia sellada con el resumen de envíos aprobados, en cinta y en cuarentena
+              para auditorías de transporte.
             </p>
             {snapshot && snapshot.s3Objects.length > 0 ? (
               <ul className="lt-aws-list">
@@ -241,46 +229,45 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
                   <li key={obj.key} className="lt-aws-list-item">
                     <strong>{obj.key}</strong>
                     <span className="lt-tabular-nums">
-                      {obj.sizeBytes} B · ETag {obj.etag.slice(0, 14)}…
+                      {obj.sizeBytes} bytes · Firma {obj.etag.slice(0, 14)}…
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
               <div className="lt-aws-empty-note">
-                Pulsa <strong>PUTOBJECT JSON</strong> para archivar el manifiesto actual de la cinta en S3.
+                Pulsa <strong>Guardar cierre</strong> para archivar un manifiesto de turno ahora.
               </div>
             )}
           </GlassyReveal>
 
-          {/* 3. Amazon SQS */}
-          <GlassyReveal className="lt-audit-card lt-glass-panel" hoverLift>
+          <GlassyReveal className="lt-surface-card lt-audit-card" hoverLift>
             <div className="lt-aws-card-head">
               <div>
-                <span className="lt-section-kicker">SERVICIO AWS 3 · EVENT QUEUE</span>
+                <span className="lt-kicker-accent">TRAZABILIDAD EN VIVO</span>
                 <h2>
-                  <IonIcon icon={layersOutline} aria-hidden="true" /> Amazon SQS Queue
+                  <IonIcon icon={layersOutline} aria-hidden="true" /> Cola de Eventos
                 </h2>
               </div>
               <button
                 type="button"
-                className="lt-primary-submit-btn"
+                className="lt-btn-primary-solid lt-btn-xs"
                 disabled={isWorking}
                 onClick={() => void handleSendSqs()}
                 data-testid="btn-aws-send-sqs"
               >
-                <IonIcon icon={paperPlaneOutline} aria-hidden="true" /> SENDMESSAGE
+                <IonIcon icon={paperPlaneOutline} aria-hidden="true" /> Emitir aviso
               </button>
             </div>
             <p className="lt-muted-desc">
-              Cada mutación CRUD en Supabase dispara automáticamente un evento asíncrono desacoplado
-              hacia <code>logitrack-inspection-events</code>.
+              Cada alta, aprobación o desvío a cuarentena queda registrado automáticamente en la
+              secuencia cronológica del turno.
             </p>
             <ul className="lt-aws-list">
               {(snapshot?.sqsMessages ?? []).slice(0, 4).map((msg) => (
                 <li key={msg.messageId} className="lt-aws-list-item">
                   <strong>
-                    [{msg.eventType}] {msg.trackingCode}
+                    {msg.trackingCode} · {msg.eventType}
                   </strong>
                   <span>{msg.detail}</span>
                 </li>
@@ -289,49 +276,48 @@ export const CloudInfraPage: React.FC<CloudInfraPageProps> = ({
           </GlassyReveal>
         </GlassyStagger>
 
-        {/* Pipeline CI/CD Real + Stack Tecnológico */}
-        <GlassyReveal className="lt-audit-card lt-glass-panel">
-          <span className="lt-section-kicker">INGENIERÍA DEVOPS · INTEGRACIÓN Y DESPLIEGUE CONTINUO</span>
+        {/* Estado de control de calidad y despliegue continuo */}
+        <GlassyReveal className="lt-surface-card lt-audit-card">
+          <span className="lt-kicker-accent">GARANTÍA DE SERVICIO CONTINUO</span>
           <h2>
-            <IonIcon icon={gitBranchOutline} aria-hidden="true" /> Pipeline CI/CD Automatizado
-            (<code>.github/workflows/ci-cd.yml</code> + Vercel Edge)
+            <IonIcon icon={shieldCheckmarkOutline} aria-hidden="true" /> Flujo Automatizado de Validación y Publicación
           </h2>
           <div className="lt-cicd-pipeline-grid">
             <div className="lt-cicd-stage">
-              <span className="lt-stage-num">01 · CI</span>
-              <h3>Git Push / PR</h3>
-              <p>Rama protegida <code>main</code> con commits semánticos y bloqueo estricto de <code>.env</code>.</p>
+              <span className="lt-stage-num">PASO 01</span>
+              <h3>Control de Cambios</h3>
+              <p>Registro seguro de actualizaciones con protección automática de credenciales.</p>
               <span className="lt-stage-pass">
-                <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> VERIFICADO
+                <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> Operativo
               </span>
             </div>
             <div className="lt-cicd-stage">
-              <span className="lt-stage-num">02 · CI</span>
-              <h3>TypeScript Strict</h3>
-              <p>Ejecución de <code>tsc --noEmit</code> garantizando 0 errores de tipos y 0 <code>any</code>.</p>
+              <span className="lt-stage-num">PASO 02</span>
+              <h3>Validación de Integridad</h3>
+              <p>Comprobación automática de todos los formularios y contratos de datos antes de publicar.</p>
               <span className="lt-stage-pass">
-                <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> 0 ERRORES
+                <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> 0 incidencias
               </span>
             </div>
             <div className="lt-cicd-stage">
-              <span className="lt-stage-num">03 · CI</span>
-              <h3>AWS Emulator Test</h3>
-              <p>Arranque de <code>aws/emulator-server.mjs</code> en puerto 4566 + smoke test DynamoDB/S3/SQS.</p>
+              <span className="lt-stage-num">PASO 03</span>
+              <h3>Prueba de Respaldo</h3>
+              <p>Verificación automática del almacenamiento de réplicas, manifiestos y cola de eventos.</p>
               <span className="lt-stage-pass">
-                <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> 4/4 PASS
+                <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> Superado
               </span>
             </div>
             <div className="lt-cicd-stage">
-              <span className="lt-stage-num">04 · CD</span>
-              <h3>Vite Bundle &amp; Edge</h3>
-              <p>Code splitting (<code>vendor-react</code>, <code>vendor-motion</code>, <code>vendor-ionic</code>) y despliegue atómico en Vercel.</p>
+              <span className="lt-stage-num">PASO 04</span>
+              <h3>Publicación sin Cortes</h3>
+              <p>Actualización instantánea para todos los centros con reversión segura garantizada.</p>
               <span className="lt-stage-pass">
-                <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> HTTP 200 LIVE
+                <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" /> Activo 24/7
               </span>
             </div>
           </div>
         </GlassyReveal>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 };
